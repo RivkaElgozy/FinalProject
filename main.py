@@ -39,34 +39,6 @@ def find_irreducible_poly(p):
     return None
 
 
-def find_polynomials(p, coeffs_irreducible_poly):
-    x = sympy.Symbol('x')
-    result = []
-    for a in range(p):
-        for b in range(p):
-            w = Polynomial(a, b)
-            #print("w: " + str(w))
-            remainder = w
-            for i in range(p - 1):
-                remainder = divmod(w * remainder, Polynomial(coeffs_irreducible_poly))[1]
-            remainder = remainder + w
-            #print("remainder: " + str(remainder))
-            remainder_mod_p = [elem % p for elem in remainder[:]][::-1]
-            #print("remainder_mod_p: " + str(Polynomial(remainder_mod_p)))
-            for c in range(p):
-                for d in range(p):
-                    t = Polynomial(c, d)
-                    #print("t: " + str(t))
-                    remainder2 = t
-                    for i in range(p):
-                        remainder2 = divmod(t * remainder2, Polynomial(coeffs_irreducible_poly))[1]
-                    #print("remainder2: " + str(remainder2))
-                    remainder2_mod_p = [elem % p for elem in remainder2[:]][::-1]
-                    #print("remainder2_mod_p: " + str(Polynomial(remainder2_mod_p)))
-                    if Polynomial(remainder_mod_p) == Polynomial(remainder2_mod_p):
-                        result.append((w, t))
-    print("Number of (w,t): " + str(len(result)))
-    return result
 
 def find_polynomials2(p, coeffs_irreducible_poly):
     x = sympy.Symbol('x')
@@ -95,20 +67,71 @@ def find_polynomials2(p, coeffs_irreducible_poly):
     return result
 
 
+def printPolyPoints(polynomials1):
+    print("Found polynomials w, t that satisfy the equation:")
+    for w, t in polynomials1:
+        print(f"w = {w}, t = {t}")
+
+
+def printLinearLine(a, b, p, coeffs_irreducible_poly):
+    result = []
+    for z1 in range(p):
+        for z2 in range(p):
+            z = Polynomial(z1,z2)
+            w = a[0]
+            t = a[1]
+            wTag = b[0]
+            tTag = b[1]
+            #w:
+            resW = w - wTag
+            remainderW_mod_p = Polynomial([elem % p for elem in resW[:]][::-1])
+            remainderW = divmod(z * remainderW_mod_p, Polynomial(coeffs_irreducible_poly))[1]
+            res1 = remainderW + wTag
+            res1_mod_p = Polynomial([elem % p for elem in res1[:]][::-1])
+            #t:
+            resT = t - tTag
+            remainderT_mod_p = Polynomial([elem % p for elem in resT[:]][::-1])
+            remainderT = divmod(z * remainderT_mod_p, Polynomial(coeffs_irreducible_poly))[1]
+            res2 = remainderT + tTag
+            res2_mod_p = Polynomial([elem % p for elem in res2[:]][::-1])
+            result.append((res1_mod_p, res2_mod_p))
+            #line = f"({wTag} + {z} * ({w} - {wTag}),({tTag} + {z} * ({t} - {tTag}))"
+            #print("The equation of the line is: F(z) =", (res1_mod_p, res2_mod_p))
+            #print(f"Fz1 = {res1_mod_p}, Fz2 = {res2_mod_p}")
+    return result
+
+def findLines(polynomials1,p, coeffs_irreducible_poly):
+    result = []
+    for a in polynomials1:
+        for b in polynomials1:
+            result += printLinearLine(a,b,p,coeffs_irreducible_poly)
+            #test for each a,b
+    return result
+
+def matchesCounter(polynomials1, polynomials2):
+    count = 0
+    for w, t in polynomials2:#F_(a,b)z
+        for w2, t2 in polynomials1:
+            if w == w2 and t == t2:
+                count += 1
+                break
+
+    print("Number of matching pairs:", count)
+
+
+
 def main():
     p = get_prime()
     irreducible_poly = find_irreducible_poly(p)
     print(f"Irreducible polynomial: {irreducible_poly.as_expr()}")
     coeffs_irreducible_poly = irreducible_poly.all_coeffs()
-    #polynomials = find_polynomials(p, coeffs_irreducible_poly)
-    polynomials2 = find_polynomials2(p, coeffs_irreducible_poly)
-    #print("Found polynomials w, t that satisfy the equation:")
-    #for w, t in polynomials:
-        #print(f"w = {w}, t = {t}")
+    polynomials1 = find_polynomials2(p, coeffs_irreducible_poly)
+    printPolyPoints(polynomials1)
+    ########################################################
+    polynomials2 = findLines(polynomials1,p, coeffs_irreducible_poly)
+    #print(polynomials2)
+    matchesCounter(polynomials1,polynomials2)
 
-    print("Found polynomials w, t that satisfy the equation:")
-    for w, t in polynomials2:
-        print(f"w = {w}, t = {t}")
 
 
 if __name__ == "__main__":
