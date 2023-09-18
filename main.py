@@ -1,5 +1,6 @@
 from polynomial import Polynomial
 import sympy
+import pandas as pd
 import numpy as np
 
 
@@ -102,11 +103,35 @@ def printLinearLine(a, b, p, coeffs_irreducible_poly):
 
 def findLines(polynomials1,p, coeffs_irreducible_poly):
     result = []
+    df = pd.DataFrame(columns=['Line', 'Matches_counter'])
     for a in polynomials1:
         for b in polynomials1:
-            result += printLinearLine(a,b,p,coeffs_irreducible_poly)
+            #result += printLinearLine(a,b,p,coeffs_irreducible_poly)
+            result = printLinearLine(a,b,p,coeffs_irreducible_poly)
+
+            counter = matchesCounter2(polynomials1,result)
+
+            # Create a new row as a dictionary
+            new_row = {'Line': f'(({a[0]},{a[1]}),({b[0]},{b[1]}))', 'Matches_counter': counter}
+            # Use append() to add the new row to the DataFrame
+            df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+            #print(df)
+
             #test for each a,b
-    return result
+    #return result
+    pd.set_option('display.max_rows', None)
+    return df
+
+def matchesCounter2(polynomials1, result):
+    count = 0
+    for w, t in result:#F_(a,b)z
+        for w2, t2 in polynomials1:
+            if w == w2 and t == t2:
+                count += 1
+                break
+    return count
+
+    #return len(set(polynomials1) & set(result))
 
 def matchesCounter(polynomials1, polynomials2):
     count = 0
@@ -128,9 +153,10 @@ def main():
     polynomials1 = find_polynomials2(p, coeffs_irreducible_poly)
     printPolyPoints(polynomials1)
     ########################################################
-    polynomials2 = findLines(polynomials1,p, coeffs_irreducible_poly)
+    polynomials2DF = findLines(polynomials1,p, coeffs_irreducible_poly)
+    print(polynomials2DF)
     #print(polynomials2)
-    matchesCounter(polynomials1,polynomials2)
+    #matchesCounter(polynomials1,polynomials2)
 
 
 
