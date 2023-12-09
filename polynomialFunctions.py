@@ -1,6 +1,7 @@
+import math
+
 from polynomial import Polynomial
 import sympy
-import pandas as pd
 import matplotlib.pyplot as plt
 
 def get_prime_number():
@@ -80,11 +81,12 @@ def calculate_coordinate_of_linear_line(p, z, coeffs_irreducible_poly, coordinat
 def get_poly_modP(p, polynomial):
     return Polynomial([elem % p for elem in polynomial[:]][::-1])
 
-def get_intersections_list(graph_points, p, coeffs_irreducible_poly):
+def get_number_of_intersections_list(graph_points, p, coeffs_irreducible_poly):
     values = []  # List to store counter values
     hash_table = create_hash_table(graph_points)
+    graph_points_samples = graph_points[:len(graph_points) // p**3]
     for a in graph_points:
-        for b in [x for x in graph_points if x != a]:
+        for b in [x for x in graph_points_samples if x != a]:
             linear_line_points = get_linear_line_between_2_points(a, b, p, coeffs_irreducible_poly)
             values.append(matches_counter(linear_line_points, hash_table))
     return values
