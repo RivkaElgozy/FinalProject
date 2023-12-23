@@ -4,6 +4,8 @@ import sympy
 import matplotlib.pyplot as plt
 import random
 import keyboard
+import multiprocessing
+
 
 
 def get_prime_number():
@@ -84,26 +86,38 @@ def get_poly_modP(p, polynomial):
     return Polynomial([elem % p for elem in polynomial[:]][::-1])
 
 
-def get_number_of_intersections_list(graph_points, p, coeffs_irreducible_poly):
-    values = []  # List to store counter values
+def process_combination_wrapper(args):
+    return get_intersections_parallel(*args)
+
+
+def get_intersections_parallel(a, b, p, coeffs_irreducible_poly, hash_table):
+    linear_line_points = get_linear_line_between_2_points(a, b, p, coeffs_irreducible_poly)
+    return matches_counter(linear_line_points, hash_table)
+
+
+def get_number_of_intersections_list_Parallel(graph_points, p, coeffs_irreducible_poly):
+    counter_values = []
     hash_table = create_hash_table(graph_points)
     selected_indexes = set()
+    combinations = []
 
-    try:
-        while not keyboard.is_pressed(' ') and not len(selected_indexes) == (len(graph_points) * (len(graph_points) - 1)):
-            a, b = random.sample(range(len(graph_points)), 2)
+    for i in range(len(graph_points)):
+        for j in range(len(graph_points)):
+            if i != j and (i, j) not in selected_indexes and (j, i) not in selected_indexes:
+                combinations.append((graph_points[i], graph_points[j], p, coeffs_irreducible_poly, hash_table))
+                selected_indexes.add((i, j))
 
-            if not ((a, b) in selected_indexes or (b, a) in selected_indexes):
-                linear_line_points = get_linear_line_between_2_points(graph_points[a], graph_points[b], p,
-                                                                      coeffs_irreducible_poly)
-                values.append(matches_counter(linear_line_points, hash_table))
+    random.shuffle(combinations)
+    with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
+        for result in pool.imap_unordered(process_combination_wrapper, combinations):
+            counter_values.append(result)
 
-            selected_indexes.add((a, b))
+            # Check for the space key to stop the loop
+            if keyboard.is_pressed('#'):
+                pool.terminate()
+                break
 
-    except KeyboardInterrupt:
-        pass
-
-    return values
+    return counter_values
 
 def create_histogram(values):
     # Create a histogram of integer counter values
