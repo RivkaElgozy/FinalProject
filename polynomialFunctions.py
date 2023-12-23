@@ -119,7 +119,7 @@ def get_number_of_intersections_list_Parallel(graph_points, p, coeffs_irreducibl
 
     return counter_values
 
-def create_histogram(values):
+def create_histogram(values, p):
     # Create a histogram of integer counter values
     unique_counters = list(set(values))  # Get unique counter values
     unique_counters.append(min(unique_counters) - 1)
@@ -131,7 +131,11 @@ def create_histogram(values):
     plt.xlabel('Intersections')
     plt.ylabel('Linear Lines')
     plt.xticks(unique_counters)  # Set x-axis ticks to unique counters
-    plt.title('Histogram')
+    plt.title(f'Histogram for p = {p}')
+    explanation_text = f'This graph has {pow(p, 3)} points. The histogram shows the results for {len(values)} lines'
+    plt.text(0.5, 0.95, explanation_text, transform=plt.gca().transAxes, ha='center', va='center',
+             bbox=dict(facecolor='white', alpha=0.5))
+
     plt.show()
 
 
