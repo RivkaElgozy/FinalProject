@@ -1,8 +1,10 @@
 import math
-
 from polynomial import Polynomial
 import sympy
 import matplotlib.pyplot as plt
+import random
+import keyboard
+
 
 def get_prime_number():
     while True:
@@ -81,15 +83,28 @@ def calculate_coordinate_of_linear_line(p, z, coeffs_irreducible_poly, coordinat
 def get_poly_modP(p, polynomial):
     return Polynomial([elem % p for elem in polynomial[:]][::-1])
 
+
 def get_number_of_intersections_list(graph_points, p, coeffs_irreducible_poly):
     values = []  # List to store counter values
     hash_table = create_hash_table(graph_points)
-    graph_points_samples = graph_points[:len(graph_points) // p**3]
-    for a in graph_points:
-        for b in [x for x in graph_points_samples if x != a]:
-            linear_line_points = get_linear_line_between_2_points(a, b, p, coeffs_irreducible_poly)
-            values.append(matches_counter(linear_line_points, hash_table))
+    selected_indexes = set()
+
+    try:
+        while not keyboard.is_pressed(' ') and not len(selected_indexes) == (len(graph_points) * (len(graph_points) - 1)):
+            a, b = random.sample(range(len(graph_points)), 2)
+
+            if not ((a, b) in selected_indexes or (b, a) in selected_indexes):
+                linear_line_points = get_linear_line_between_2_points(graph_points[a], graph_points[b], p,
+                                                                      coeffs_irreducible_poly)
+                values.append(matches_counter(linear_line_points, hash_table))
+
+            selected_indexes.add((a, b))
+
+    except KeyboardInterrupt:
+        pass
+
     return values
+
 def create_histogram(values):
     # Create a histogram of integer counter values
     unique_counters = list(set(values))  # Get unique counter values
