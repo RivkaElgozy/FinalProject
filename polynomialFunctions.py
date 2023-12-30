@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import random
 import keyboard
 import multiprocessing
+from PolyClass import poly
 
 
 
@@ -16,18 +17,6 @@ def get_prime_number():
         else:
             print("The number is not prime. Please enter a prime number.")
     return p
-
-
-def get_irreducible_polynomial(p):
-    x = sympy.Symbol('x')
-    for a in range(1, p):
-        for b in range(p):
-            for c in range(p):
-                poly = sympy.Poly(a * x ** 2 + b * x + c, x)
-                if not any(poly.subs(x, i) % p == 0 for i in range(p)):
-                    print(f"Irreducible polynomial: {poly.as_expr()}")
-                    return poly.all_coeffs()
-    return None
 
 
 def get_graph_points(p, coeffs_irreducible_poly):
@@ -56,31 +45,26 @@ def get_graph_points(p, coeffs_irreducible_poly):
     return graph_points
 
 
-def print_graph_points(graph_points):
-    print("The Graph points:")
-    for coordinate_a, coordinate_b in graph_points:
-        print(f"coordinate_a = {coordinate_a}, coordinate_b = {coordinate_b}")
 
-
-def get_linear_line_between_2_points(first_point, second_point, p, coeffs_irreducible_poly):
+def get_linear_line_between_2_points(first_point, second_point, field_p):
     linear_line_points = []
-    for z1 in range(p):
-        for z2 in range(p):
+    for z1 in range(field_p.p):
+        for z2 in range(field_p.p):
             z = Polynomial(z1, z2)
 
-            coordinate_a = calculate_coordinate_of_linear_line(p,z,coeffs_irreducible_poly,first_point[0],second_point[0])
-            coordinate_b = calculate_coordinate_of_linear_line(p,z,coeffs_irreducible_poly,first_point[1],second_point[1])
+            coordinate_a = calculate_coordinate_of_linear_line(field_p, z,first_point[0],second_point[0])
+            coordinate_b = calculate_coordinate_of_linear_line(field_p,z,first_point[1],second_point[1])
 
             linear_line_points.append((coordinate_a, coordinate_b))
     return linear_line_points
 
-def calculate_coordinate_of_linear_line(p, z, coeffs_irreducible_poly, coordinate_first_point,coordinate_second_point):
+def calculate_coordinate_of_linear_line(field_p, z, coordinate_first_point,coordinate_second_point):
     # Gets 2 coordinates respectively and returns the corresponding coordinate in the linear line
     difference = coordinate_first_point - coordinate_second_point
-    difference_mod_p = get_poly_modP(p, difference)
-    remainder = divmod(z * difference_mod_p, Polynomial(coeffs_irreducible_poly))[1]
+    difference_mod_p = get_poly_modP(field_p.p, difference)
+    remainder = divmod(z * difference_mod_p, Polynomial(field_p.coeffs_irreducible_poly))[1]
     coordinate = remainder + coordinate_second_point
-    return get_poly_modP(p, coordinate)
+    return get_poly_modP(field_p.p, coordinate)
 
 def get_poly_modP(p, polynomial):
     return Polynomial([elem % p for elem in polynomial[:]][::-1])
@@ -90,12 +74,12 @@ def process_combination_wrapper(args):
     return get_intersections_parallel(*args)
 
 
-def get_intersections_parallel(a, b, p, coeffs_irreducible_poly, hash_table):
-    linear_line_points = get_linear_line_between_2_points(a, b, p, coeffs_irreducible_poly)
+def get_intersections_parallel(a, b, field_p, hash_table):
+    linear_line_points = get_linear_line_between_2_points(a, b, field_p)
     return matches_counter(linear_line_points, hash_table)
 
 
-def get_number_of_intersections_list_Parallel(graph_points, p, coeffs_irreducible_poly):
+def get_number_of_intersections_list_Parallel(graph_points, field_p):
     counter_values = []
     hash_table = create_hash_table(graph_points)
     selected_indexes = set()
@@ -104,7 +88,7 @@ def get_number_of_intersections_list_Parallel(graph_points, p, coeffs_irreducibl
     for i in range(len(graph_points)):
         for j in range(len(graph_points)):
             if i != j and (i, j) not in selected_indexes and (j, i) not in selected_indexes:
-                combinations.append((graph_points[i], graph_points[j], p, coeffs_irreducible_poly, hash_table))
+                combinations.append((graph_points[i], graph_points[j], field_p, hash_table))
                 selected_indexes.add((i, j))
 
     random.shuffle(combinations)
@@ -157,3 +141,38 @@ def matches_counter(linear_line_points, hash_table):
         except KeyError:
             pass  # Key doesn't exist, continue without incrementing count
     return count
+
+
+def evaluate_tree_node(node, x, y, p, coeffs_irreducible_poly):
+    if isinstance(node.value,int):
+        return int(node.value)
+    if node.value.lower() == 'x':
+        return x
+    elif node.value.lower() == 'y':
+        return y
+    elif node.value.lower() == 'p':
+        return p
+    elif node.value == '^':
+        left_result = evaluate_tree_node(node.left, x, y, p, coeffs_irreducible_poly)
+        right_result = int(evaluate_tree_node(node.right, x, y, p, coeffs_irreducible_poly))
+        return left_result.pow(right_result)
+    elif node.value in ['+', '-', '*', '/']:
+        left_result = evaluate_tree_node(node.left, x, y, p, coeffs_irreducible_poly)
+        right_result = evaluate_tree_node(node.right, x, y, p, coeffs_irreducible_poly)
+        if node.value == '+':
+            if isinstance(left_result, int) and isinstance(right_result, int):
+                return left_result + right_result
+            return left_result.add_polynomials(p, left_result, right_result)
+        elif node.value == '-':
+            if isinstance(left_result, int) and isinstance(right_result, int):
+                return left_result - right_result
+            return left_result.sub_polynomials(p, left_result, right_result)
+        elif node.value == '*':
+            if isinstance(left_result, int) and isinstance(right_result, int):
+                return left_result * right_result
+            return left_result.multiply_polynomials(p, left_result, right_result, coeffs_irreducible_poly)
+        elif node.value == '/':
+            if isinstance(left_result, int) and isinstance(right_result, int):
+                return left_result / right_result
+            return left_result.divide_polynomials(p, left_result, right_result, coeffs_irreducible_poly)
+
