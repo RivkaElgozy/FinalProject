@@ -62,7 +62,7 @@ def calculate_coordinate_of_linear_line(field_p, z, coordinate_first_point,coord
     # Gets 2 coordinates respectively and returns the corresponding coordinate in the linear line
     difference = coordinate_first_point - coordinate_second_point
     difference_mod_p = get_poly_modP(field_p.p, difference)
-    remainder = divmod(z * difference_mod_p, Polynomial(field_p.coeffs_irreducible_poly))[1]
+    remainder = divmod(z * difference_mod_p, Polynomial(field_p.irreduciblePolynomial))[1]
     coordinate = remainder + coordinate_second_point
     return get_poly_modP(field_p.p, coordinate)
 
@@ -143,36 +143,43 @@ def matches_counter(linear_line_points, hash_table):
     return count
 
 
-def evaluate_tree_node(node, x, y, p, coeffs_irreducible_poly):
-    if isinstance(node.value,int):
+def evaluate_tree_node(node, x, y, field_p):
+    print(node.value)
+    if node.value.isnumeric():
         return int(node.value)
     if node.value.lower() == 'x':
+        if x.coeffs[0] == 0:
+            return x.coeffs[1]
         return x
     elif node.value.lower() == 'y':
+        if y.coeffs[0] == 0:
+            return y.coeffs[1]
         return y
     elif node.value.lower() == 'p':
-        return p
+        return field_p.p
     elif node.value == '^':
-        left_result = evaluate_tree_node(node.left, x, y, p, coeffs_irreducible_poly)
-        right_result = int(evaluate_tree_node(node.right, x, y, p, coeffs_irreducible_poly))
-        return left_result.pow(right_result)
+        left_result = evaluate_tree_node(node.left, x, y, field_p)
+        right_result = int(evaluate_tree_node(node.right, x, y, field_p))
+        if isinstance(left_result, int) and isinstance(right_result, int):
+            return pow(left_result, right_result) % field_p.p
+        return left_result.pow(right_result, field_p)
     elif node.value in ['+', '-', '*', '/']:
-        left_result = evaluate_tree_node(node.left, x, y, p, coeffs_irreducible_poly)
-        right_result = evaluate_tree_node(node.right, x, y, p, coeffs_irreducible_poly)
+        left_result = evaluate_tree_node(node.left, x, y, field_p)
+        right_result = evaluate_tree_node(node.right, x, y, field_p)
         if node.value == '+':
             if isinstance(left_result, int) and isinstance(right_result, int):
-                return left_result + right_result
-            return left_result.add_polynomials(p, left_result, right_result)
+                return (left_result + right_result) % field_p.p
+            return left_result.add_polynomial(field_p.p, right_result)
         elif node.value == '-':
             if isinstance(left_result, int) and isinstance(right_result, int):
-                return left_result - right_result
-            return left_result.sub_polynomials(p, left_result, right_result)
+                return (left_result - right_result) % field_p.p
+            return left_result.sub_polynomial(field_p.p, right_result)
         elif node.value == '*':
             if isinstance(left_result, int) and isinstance(right_result, int):
-                return left_result * right_result
-            return left_result.multiply_polynomials(p, left_result, right_result, coeffs_irreducible_poly)
+                return (left_result * right_result) % field_p.p
+            return left_result.multiply_polynomial(right_result, field_p)
         elif node.value == '/':
             if isinstance(left_result, int) and isinstance(right_result, int):
-                return left_result / right_result
-            return left_result.divide_polynomials(p, left_result, right_result, coeffs_irreducible_poly)
+                return (left_result / right_result) % field_p.p
+            return left_result.divide_polynomial(right_result, field_p)
 
