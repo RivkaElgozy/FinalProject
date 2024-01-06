@@ -6,8 +6,6 @@ from binaryTree import *
 
 
 def main():
-    print(Polynomial([1,0]))
-    print(Polynomial([0,1]))
     p = get_prime_number()
     field_p = field(p)
     graphPolynomial = Graph(field_p, "x^p + x = y^(p+1)")
