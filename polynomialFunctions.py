@@ -1,11 +1,8 @@
-import math
-from polynomial import Polynomial
-import sympy
 import matplotlib.pyplot as plt
 import random
 import keyboard
 import multiprocessing
-from PolyClass import poly
+from polyClassTest import *
 
 
 
@@ -18,39 +15,11 @@ def get_prime_number():
             print("The number is not prime. Please enter a prime number.")
     return p
 
-
-def get_graph_points(p, coeffs_irreducible_poly):
-    graph_points = []
-    for a in range(p):
-        for b in range(p):
-            # calculate w^p+w:
-            coordinate_a = Polynomial(a, b)
-            coordinate_a_Pow_P_arr = [a] + [0] * (p - 1) + [b]
-            coordinate_a_Pow_P = Polynomial(coordinate_a_Pow_P_arr)
-            remainder_coordinate_a = divmod(coordinate_a_Pow_P, Polynomial(coeffs_irreducible_poly))[1]
-            remainder_coordinate_a = remainder_coordinate_a + coordinate_a
-            remainder_coordinate_a_mod_p = get_poly_modP(p, remainder_coordinate_a)
-            for c in range(p):
-                for d in range(p):
-                    # calculate t^(p+1):
-                    coordinate_b = Polynomial(c, d)
-                    coordinate_b_Pow_P_arr = [c] + [0] * (p - 1) + [d]
-                    coordinate_b_Pow_P = Polynomial(coordinate_b_Pow_P_arr)
-                    remainder_coordinate_b = divmod(coordinate_b_Pow_P, Polynomial(coeffs_irreducible_poly))[1]
-                    remainder_coordinate_b = divmod(coordinate_b * remainder_coordinate_b, Polynomial(coeffs_irreducible_poly))[1]
-                    remainder_coordinate_b_mod_p = get_poly_modP(p, remainder_coordinate_b)
-                    if Polynomial(remainder_coordinate_a_mod_p) == Polynomial(remainder_coordinate_b_mod_p):
-                        graph_points.append((coordinate_a, coordinate_b))
-    print("Number of points in the graph: " + str(len(graph_points)))
-    return graph_points
-
-
-
 def get_linear_line_between_2_points(first_point, second_point, field_p):
     linear_line_points = []
     for z1 in range(field_p.p):
         for z2 in range(field_p.p):
-            z = Polynomial(z1, z2)
+            z = Poly([z1, z2],field_p.p)
 
             coordinate_a = calculate_coordinate_of_linear_line(field_p, z,first_point[0],second_point[0])
             coordinate_b = calculate_coordinate_of_linear_line(field_p,z,first_point[1],second_point[1])
@@ -60,14 +29,12 @@ def get_linear_line_between_2_points(first_point, second_point, field_p):
 
 def calculate_coordinate_of_linear_line(field_p, z, coordinate_first_point,coordinate_second_point):
     # Gets 2 coordinates respectively and returns the corresponding coordinate in the linear line
-    difference = coordinate_first_point - coordinate_second_point
-    difference_mod_p = get_poly_modP(field_p.p, difference)
-    remainder = divmod(z * difference_mod_p, Polynomial(field_p.irreduciblePolynomial))[1]
-    coordinate = remainder + coordinate_second_point
-    return get_poly_modP(field_p.p, coordinate)
+    difference = coordinate_first_point.subtract(coordinate_second_point)
+    poly_mul = z.multiply(difference)
+    remainder = poly_mul.divide(Poly(field_p.irreduciblePolynomial,field_p.p))[1]
+    coordinate = remainder.add(coordinate_second_point)
+    return coordinate
 
-def get_poly_modP(p, polynomial):
-    return Polynomial([elem % p for elem in polynomial[:]][::-1])
 
 
 def process_combination_wrapper(args):
@@ -144,16 +111,21 @@ def matches_counter(linear_line_points, hash_table):
 
 
 def evaluate_tree_node(node, x, y, field_p):
-    print(node.value)
     if node.value.isnumeric():
         return int(node.value)
     if node.value.lower() == 'x':
-        if x.coeffs[0] == 0:
-            return x.coeffs[1]
+        if x.coefficients[0] == 0:
+            try:
+                return x.coefficients[1]
+            except:
+                return Poly([0],field_p)
         return x
     elif node.value.lower() == 'y':
-        if y.coeffs[0] == 0:
-            return y.coeffs[1]
+        if y.coefficients[0] == 0:
+            try:
+                return y.coefficients[1]
+            except:
+                return Poly([0], field_p)
         return y
     elif node.value.lower() == 'p':
         return field_p.p
@@ -162,24 +134,24 @@ def evaluate_tree_node(node, x, y, field_p):
         right_result = int(evaluate_tree_node(node.right, x, y, field_p))
         if isinstance(left_result, int) and isinstance(right_result, int):
             return pow(left_result, right_result) % field_p.p
-        return left_result.pow(right_result, field_p)
+        return left_result.pow(right_result)
     elif node.value in ['+', '-', '*', '/']:
         left_result = evaluate_tree_node(node.left, x, y, field_p)
         right_result = evaluate_tree_node(node.right, x, y, field_p)
         if node.value == '+':
             if isinstance(left_result, int) and isinstance(right_result, int):
                 return (left_result + right_result) % field_p.p
-            return left_result.add_polynomial(field_p.p, right_result)
+            return left_result.add(right_result)
         elif node.value == '-':
             if isinstance(left_result, int) and isinstance(right_result, int):
                 return (left_result - right_result) % field_p.p
-            return left_result.sub_polynomial(field_p.p, right_result)
+            return left_result.sub(right_result)
         elif node.value == '*':
             if isinstance(left_result, int) and isinstance(right_result, int):
                 return (left_result * right_result) % field_p.p
-            return left_result.multiply_polynomial(right_result, field_p)
+            return left_result.multiply(right_result)
         elif node.value == '/':
             if isinstance(left_result, int) and isinstance(right_result, int):
                 return (left_result / right_result) % field_p.p
-            return left_result.divide_polynomial(right_result, field_p)
+            return left_result.divide(right_result)
 

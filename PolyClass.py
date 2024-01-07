@@ -24,16 +24,12 @@ class poly:
         array = []
         if number % field_p.p == 0:
             try:
-                array = [self.pol.a] + [0] * (field_p.p - 1) + [self.pol.b]
+                array = [self.pol.a] + [0] * int(number / field_p.p) * (field_p.p - 1) + [self.pol.b]
             except:
-                array = [0] + [self.pol.a] + [0] * (field_p.p - 1)
+                array = [0] + [self.pol.a] + [0] * (int(number / field_p.p) - 1)
             # return self.get_poly_modP(field_p.p, divmod(Polynomial(array), Polynomial(field_p.irreduciblePolynomial))[1][:])
             return poly(divmod(Polynomial(array), Polynomial(field_p.irreduciblePolynomial))[1][:])
         else:
-            try:
-                array = [self.pol.a] + [0] * (field_p.p - 1) + [self.pol.b]
-            except:
-                array = [0] + [self.pol.a] + [0] * (field_p.p - 1)
             res = self.pol
             for i in range(number % field_p.p):
                 res = divmod(res * divmod(Polynomial(array), Polynomial(field_p.irreduciblePolynomial))[1], Polynomial(field_p.irreduciblePolynomial))[1]

@@ -78,8 +78,38 @@ class Poly:
         remainder = Poly(r, self.field)
         return quotient, remainder
 
+    def pow(self, number):
+        if number < self.field.p: #x^(ER)
+            resMul = Poly(self.coefficients.copy(), self.field)
+            for i in range(number):
+                resMul = resMul.multiply(self)
+            return resMul
+        try:
+            array = [self.coefficients[0]] + [0] * (self.field.p - 1) + [self.coefficients[1]]
+        except:
+            array = [0] + [self.coefficients[0]] + [0] * (self.field.p - 1)
+        if number % self.field.p == 0 and number != self.field.p: #x^(ER*p)
+            return Poly(array, self.field.p).divide(Poly(self.field.irreduciblePolynomial, self.field))[1].pow(number/self.field.p, self.field)
+        if number == self.field.p: #x^(p)
+            return Poly(array, self.field).divide(Poly(self.field.irreduciblePolynomial, self.field))[1]
+        else: #x^(ER+p)
+            return (Poly(array, self.field).divide(Poly(self.field.irreduciblePolynomial, self.field))[1]).multiply(self.pow(number-self.field.p, self.field))
+
     def __str__(self):
-        return f"Poly({self.coefficients}, {self.field.p})"
+        terms = []
+        reversed_coefficients = self.coefficients[::-1]
+        for i, coef in enumerate(reversed_coefficients):
+            if coef != 0:
+                if i == 0:
+                    terms.append(str(coef))
+                elif i == 1:
+                    terms.append(f"{coef}*x")
+                else:
+                    terms.append(f"{coef}*x^{i}")
+        if not terms:
+            return "0"
+        else:
+            return " + ".join(terms[::-1])
 
 # Example usage:
 p_value = 7
@@ -98,3 +128,6 @@ print("A(x):", A_poly)
 print("B(x):", B_poly)
 print("Quotient Q(x):", Q_poly)
 print("Remainder R(x):", R_poly)
+print("A(x)^p:", A_poly.pow(7))
+print("A(x)^p:", str(A_poly.pow(7)))
+

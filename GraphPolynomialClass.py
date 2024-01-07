@@ -1,7 +1,6 @@
-from polynomial import Polynomial
-from PolyClass import poly
 from binaryTree import equation_to_binary_tree
 from polynomialFunctions import *
+from polyClassTest import *
 
 
 class Graph:
@@ -27,30 +26,20 @@ class Graph:
         rightTree = equation_to_binary_tree(rightSide)
         for a in range(primeNumber):
             for b in range(primeNumber):
-                x = poly([a, b])
+                x = Poly([a, b],primeNumber)
                 for c in range(primeNumber):
                     for d in range(primeNumber):
-                        y = poly([c, d])
+                        y = Poly([c, d],primeNumber)
                         # Parse and evaluate the expressions
-                        print("x: ", x.pol)
-                        print("y: ", y.pol)
                         leftSide_poly = evaluate_tree_node(leftTree, x, y, self.field_p)
                         rightSide_poly = evaluate_tree_node(rightTree, x, y, self.field_p)
-                        if isinstance(leftSide_poly, poly):
-                            print("left_pol: ", leftSide_poly.pol)
-                        else:
-                            print("left_num: ", leftSide_poly)
-                        if isinstance(rightSide_poly, poly):
-                            print("right_pol: ", rightSide_poly.pol)
-                        else:
-                            print("right_num: ", rightSide_poly)
                         if isinstance(leftSide_poly, int):
-                            leftSide_poly = poly([0] + [leftSide_poly])
+                            leftSide_poly = Poly([0] + [leftSide_poly], primeNumber)
                         if isinstance(rightSide_poly, int):
-                            rightSide_poly = poly([0] + [rightSide_poly])
+                            rightSide_poly = Poly([0] + [rightSide_poly], primeNumber)
                         # Check if the pair satisfies the equation
-                        if leftSide_poly.pol == rightSide_poly.pol:
-                            graph_points.append((x.pol, y.pol))
+                        if str(leftSide_poly) == str(rightSide_poly):
+                            graph_points.append((x, y))
         return graph_points
 
 
