@@ -105,11 +105,11 @@ class Poly:
                 elif i == 1 and coef == 1:
                     terms.append(f"x")
                 elif i == 1:
-                    terms.append(f"{coef}*x")
+                    terms.append(f"{coef}x")
                 elif coef == 1:
                     terms.append(f"x^{i}")
                 else:
-                    terms.append(f"{coef}*x^{i}")
+                    terms.append(f"{coef}x^{i}")
         if not terms:
             return "0"
         else:
