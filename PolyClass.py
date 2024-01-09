@@ -8,7 +8,6 @@ class poly:
         self.coeffs = coeffs
 
     def add_polynomial(self, p, poly1):
-        print("add: ", self.pol + poly1.pol)
         return self.get_poly_modP(p, Polynomial(self.pol + poly1.pol))
 
     def sub_polynomial(self, p, poly1):

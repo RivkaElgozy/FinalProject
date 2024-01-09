@@ -28,7 +28,7 @@ def div_poly(A, B, p):
     return Q, R
 
 def remove_leading_zeros(arr):
-    if isinstance(arr,Poly):
+    if isinstance(arr, Poly):
         arr = arr.coefficients
     # Find the index of the first non-zero element
     non_zero_index = next((i for i, x in enumerate(arr) if x != 0), None)
@@ -36,10 +36,12 @@ def remove_leading_zeros(arr):
     if non_zero_index is not None:
         # Slice the array from the first non-zero element onward
         result = arr[non_zero_index:]
+        if len(result) == 1:
+            return [0] + result
         return result
     else:
         # If the array is all zeros, return a single-element array with 0
-        return [0]
+        return [0, 0]
 
 
 class Poly:
@@ -78,10 +80,13 @@ class Poly:
         return quotient, remainder
 
     def pow(self, number):
+        # print("pow: ", self)
+        # print("number: ", number)
         if number < self.field.p:  # x^(EFq)
             res_mul = Poly(self.coefficients.copy(), self.field)
             for i in range(number-1):
                 res_mul = res_mul.multiply(self)
+            # print("res_mul: ", res_mul)
             return res_mul
         try:
             array = [self.coefficients[0]] + [0] * (self.field.p - 1) + [self.coefficients[1]]
