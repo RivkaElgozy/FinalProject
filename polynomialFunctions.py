@@ -141,17 +141,33 @@ def evaluate_tree_node(node, x, y, field_p):
         if node.value == '+':
             if isinstance(left_result, int) and isinstance(right_result, int):
                 return left_result + right_result
+            if isinstance(left_result, int):
+                return Poly([left_result], field_p).add(right_result)
+            if isinstance(right_result, int):
+                return left_result.add(Poly([0, right_result], field_p))
             return left_result.add(right_result)
         elif node.value == '-':
             if isinstance(left_result, int) and isinstance(right_result, int):
                 return left_result - right_result
-            return left_result.sub(right_result)
+            if isinstance(left_result, int):
+                return Poly([left_result], field_p).subtract(right_result)
+            if isinstance(right_result, int):
+                return left_result.subtract(Poly([0, right_result], field_p))
+            return left_result.subtract(right_result)
         elif node.value == '*':
             if isinstance(left_result, int) and isinstance(right_result, int):
                 return left_result * right_result
+            if isinstance(left_result, int):
+                return Poly([left_result], field_p).multiply(right_result)
+            if isinstance(right_result, int):
+                return left_result.multiply(Poly([0, right_result], field_p))
             return left_result.multiply(right_result)
         elif node.value == '/':
             if isinstance(left_result, int) and isinstance(right_result, int):
                 return left_result / right_result
-            return left_result.divide(right_result)
+            if isinstance(left_result, int):
+                return Poly([left_result], field_p).divide(right_result)[0]
+            if isinstance(right_result, int):
+                return left_result.divide(Poly([0, right_result], field_p))[0]
+            return left_result.divide(right_result)[0]
 

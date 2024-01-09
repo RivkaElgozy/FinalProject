@@ -9,11 +9,28 @@ class Graph:
         self.field_p = field_p
         self.graph_points = self.calc_graph_points()
 
+    def validate_parentheses(self):
+        stack = []
+        for char in self.graph:
+            if char == '(':
+                stack.append(char)
+            elif char == ')':
+                if not stack:
+                    print("Mismatched parentheses in the graph expression.")
+                    return False
+                stack.pop()
+
+        if stack:
+            print("Mismatched parentheses in the graph expression.")
+            return False
+        return True
+
     def calc_graph_points(self):
         primeNumber = self.field_p.p
         # Validate parentheses
-        if self.graph.count('(') != self.graph.count(')'):
-            raise ValueError("Mismatched parentheses in the graph expression.")
+        # Validate parentheses
+        if not self.validate_parentheses():
+            return False
 
         # Split the graph expression into individual components
         components = self.graph.split('=')

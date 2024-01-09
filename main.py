@@ -10,10 +10,10 @@ def main():
     field_p = field(p)
     print(f"Irreducible polynomial: ", Poly(field_p.irreduciblePolynomial, field_p))
     graphPolynomial = Graph(field_p, "x^p + x = y^(p+1)")
-    #GraphPolynomial.graph_points = get_graph_points(p, coeffs_irreducible_poly)
-    # X^(p) + X = (y^(p))/(y^(p-1)+1) - new akuma
-    graphPolynomial.print_graph_points()
-    create_histogram(get_number_of_intersections_list_Parallel(graphPolynomial.graph_points,field_p), field_p.p)
+    # graphPolynomial = Graph(field_p, "x^p + x = y^(p)/(y^(p-1)+1)")- new akuma
+    if graphPolynomial.graph_points:
+        graphPolynomial.print_graph_points()
+        create_histogram(get_number_of_intersections_list_Parallel(graphPolynomial.graph_points, field_p), field_p.p)
 
 if __name__ == "__main__":
     main()
