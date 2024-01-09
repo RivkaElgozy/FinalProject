@@ -12,6 +12,5 @@ class field:
                 for c in range(self.p):
                     poly = sympy.Poly(a * x ** 2 + b * x + c, x)
                     if not any(poly.subs(x, i) % self.p == 0 for i in range(self.p)):
-                        print(f"Irreducible polynomial: {poly.as_expr()}")
                         return poly.all_coeffs()
         return None

@@ -10,7 +10,7 @@ def mul_poly(p1, p2, p):
     result = [0] * (len(p1) + len(p2) - 1)
     for i in range(len(p1)):
         for j in range(len(p2)):
-            result[i + j] = (result[i + j] + p1[i] * p2[j]) % p
+            result[i + j] = (result[i + j] + p1[i] * p2[j])
     return result
 
 def inv_mod_p(a, p):
@@ -29,7 +29,7 @@ def div_poly(A, B, p):
 
 def remove_leading_zeros(arr):
     if isinstance(arr,Poly):
-        arr=arr.coefficients
+        arr = arr.coefficients
     # Find the index of the first non-zero element
     non_zero_index = next((i for i, x in enumerate(arr) if x != 0), None)
 
@@ -49,9 +49,8 @@ class Poly:
 
     def add(self, other):
         len_self, len_other = len(self.coefficients), len(other.coefficients)
-
         if len_self < len_other:
-            self.coefficients += [0] * (len_other - len_self)
+            self.coefficients = [0] * (len_other - len_self) + self.coefficients
         elif len_other < len_self:
             other.coefficients = [0] * (len_self - len_other) + other.coefficients
 
@@ -70,7 +69,7 @@ class Poly:
         return Poly(result, self.field)
     def multiply(self, other):
         result = mul_poly(self.coefficients, other.coefficients, self.field.p)
-        return Poly(result, self.field)
+        return (Poly(result, self.field)).divide(Poly(self.field.irreduciblePolynomial, self.field))[1]
 
     def divide(self, other):
         q, r = div_poly(self, other, self.field.p)
@@ -79,21 +78,22 @@ class Poly:
         return quotient, remainder
 
     def pow(self, number):
-        if number < self.field.p: #x^(ER)
-            resMul = Poly(self.coefficients.copy(), self.field)
-            for i in range(number):
-                resMul = resMul.multiply(self)
-            return resMul
+        if number < self.field.p:  # x^(EFq)
+            res_mul = Poly(self.coefficients.copy(), self.field)
+            for i in range(number-1):
+                res_mul = res_mul.multiply(self)
+            return res_mul
         try:
             array = [self.coefficients[0]] + [0] * (self.field.p - 1) + [self.coefficients[1]]
         except:
-            array = [0] + [self.coefficients[0]] + [0] * (self.field.p - 1)
-        if number % self.field.p == 0 and number != self.field.p: #x^(ER*p)
-            return Poly(array, self.field.p).divide(Poly(self.field.irreduciblePolynomial, self.field))[1].pow(number/self.field.p, self.field)
-        if number == self.field.p: #x^(p)
+            self.coefficients = [0] + self.coefficients
+            array = [self.coefficients[0]] + [0] * (self.field.p - 1) + [self.coefficients[1]]
+        if number % self.field.p == 0 and number != self.field.p:  # x^(EFq*p)
+            return (Poly(array, self.field).divide(Poly(self.field.irreduciblePolynomial, self.field))[1]).pow(int(number/self.field.p))
+        if number == self.field.p:  # x^(p)
             return Poly(array, self.field).divide(Poly(self.field.irreduciblePolynomial, self.field))[1]
-        else: #x^(ER+p)
-            return (Poly(array, self.field).divide(Poly(self.field.irreduciblePolynomial, self.field))[1]).multiply(self.pow(number-self.field.p, self.field))
+        else:  # x^(EFq+p)
+            return (Poly(array, self.field).divide(Poly(self.field.irreduciblePolynomial, self.field))[1]).multiply(self.pow(number-self.field.p))
 
     def __str__(self):
         terms = []
@@ -102,8 +102,12 @@ class Poly:
             if coef != 0:
                 if i == 0:
                     terms.append(str(coef))
+                elif i == 1 and coef == 1:
+                    terms.append(f"x")
                 elif i == 1:
                     terms.append(f"{coef}*x")
+                elif coef == 1:
+                    terms.append(f"x^{i}")
                 else:
                     terms.append(f"{coef}*x^{i}")
         if not terms:
@@ -112,22 +116,22 @@ class Poly:
             return " + ".join(terms[::-1])
 
 # Example usage:
-p_value = 7
-finite_field = field(p_value)
-
-A_coefficients = [6,3,1,1,0,1]
-B_coefficients = [3,5,6]
-
-A_poly = Poly(A_coefficients, finite_field)
-B_poly = Poly(B_coefficients, finite_field)
-
-# Perform polynomial division
-Q_poly, R_poly = A_poly.divide(B_poly)
-
-print("A(x):", A_poly)
-print("B(x):", B_poly)
-print("Quotient Q(x):", Q_poly)
-print("Remainder R(x):", R_poly)
-print("A(x)^p:", A_poly.pow(7))
-print("A(x)^p:", str(A_poly.pow(7)))
+# p_value = 7
+# finite_field = field(p_value)
+#
+# A_coefficients = [6,3,1,1,0,1]
+# B_coefficients = [3,5,6]
+#
+# A_poly = Poly(A_coefficients, finite_field)
+# B_poly = Poly(B_coefficients, finite_field)
+#
+# # Perform polynomial division
+# Q_poly, R_poly = A_poly.divide(B_poly)
+#
+# print("A(x):", A_poly)
+# print("B(x):", B_poly)
+# print("Quotient Q(x):", Q_poly)
+# print("Remainder R(x):", R_poly)
+# print("A(x)^p:", A_poly.pow(7))
+# print("A(x)^p:", str(A_poly.pow(7)))
 

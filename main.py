@@ -8,6 +8,7 @@ from binaryTree import *
 def main():
     p = get_prime_number()
     field_p = field(p)
+    print(f"Irreducible polynomial: ", Poly(field_p.irreduciblePolynomial, field_p))
     graphPolynomial = Graph(field_p, "x^p + x = y^(p+1)")
     #GraphPolynomial.graph_points = get_graph_points(p, coeffs_irreducible_poly)
     # X^(p) + X = (y^(p))/(y^(p-1)+1) - new akuma

@@ -19,7 +19,7 @@ def get_linear_line_between_2_points(first_point, second_point, field_p):
     linear_line_points = []
     for z1 in range(field_p.p):
         for z2 in range(field_p.p):
-            z = Poly([z1, z2],field_p.p)
+            z = Poly([z1, z2], field_p)
 
             coordinate_a = calculate_coordinate_of_linear_line(field_p, z,first_point[0],second_point[0])
             coordinate_b = calculate_coordinate_of_linear_line(field_p,z,first_point[1],second_point[1])
@@ -31,7 +31,7 @@ def calculate_coordinate_of_linear_line(field_p, z, coordinate_first_point,coord
     # Gets 2 coordinates respectively and returns the corresponding coordinate in the linear line
     difference = coordinate_first_point.subtract(coordinate_second_point)
     poly_mul = z.multiply(difference)
-    remainder = poly_mul.divide(Poly(field_p.irreduciblePolynomial,field_p.p))[1]
+    remainder = poly_mul.divide(Poly(field_p.irreduciblePolynomial, field_p))[1]
     coordinate = remainder.add(coordinate_second_point)
     return coordinate
 
@@ -116,9 +116,9 @@ def evaluate_tree_node(node, x, y, field_p):
     if node.value.lower() == 'x':
         if x.coefficients[0] == 0:
             try:
-                return x.coefficients[1]
+                return Poly([0]+[x.coefficients[1]], field_p)
             except:
-                return Poly([0],field_p)
+                return Poly([0], field_p)
         return x
     elif node.value.lower() == 'y':
         if y.coefficients[0] == 0:
@@ -140,18 +140,18 @@ def evaluate_tree_node(node, x, y, field_p):
         right_result = evaluate_tree_node(node.right, x, y, field_p)
         if node.value == '+':
             if isinstance(left_result, int) and isinstance(right_result, int):
-                return (left_result + right_result) % field_p.p
+                return left_result + right_result
             return left_result.add(right_result)
         elif node.value == '-':
             if isinstance(left_result, int) and isinstance(right_result, int):
-                return (left_result - right_result) % field_p.p
+                return left_result - right_result
             return left_result.sub(right_result)
         elif node.value == '*':
             if isinstance(left_result, int) and isinstance(right_result, int):
-                return (left_result * right_result) % field_p.p
+                return left_result * right_result
             return left_result.multiply(right_result)
         elif node.value == '/':
             if isinstance(left_result, int) and isinstance(right_result, int):
-                return (left_result / right_result) % field_p.p
+                return left_result / right_result
             return left_result.divide(right_result)
 

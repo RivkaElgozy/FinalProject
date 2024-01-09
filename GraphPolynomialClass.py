@@ -26,18 +26,22 @@ class Graph:
         rightTree = equation_to_binary_tree(rightSide)
         for a in range(primeNumber):
             for b in range(primeNumber):
-                x = Poly([a, b],primeNumber)
+                x = Poly([a, b], field(primeNumber))
                 for c in range(primeNumber):
                     for d in range(primeNumber):
-                        y = Poly([c, d],primeNumber)
+                        y = Poly([c, d], field(primeNumber))
                         # Parse and evaluate the expressions
                         leftSide_poly = evaluate_tree_node(leftTree, x, y, self.field_p)
                         rightSide_poly = evaluate_tree_node(rightTree, x, y, self.field_p)
                         if isinstance(leftSide_poly, int):
-                            leftSide_poly = Poly([0] + [leftSide_poly], primeNumber)
+                            leftSide_poly = Poly([0] + [leftSide_poly], field(primeNumber))
                         if isinstance(rightSide_poly, int):
-                            rightSide_poly = Poly([0] + [rightSide_poly], primeNumber)
+                            rightSide_poly = Poly([0] + [rightSide_poly], field(primeNumber))
                         # Check if the pair satisfies the equation
+                        # print("x: ", x)
+                        # print("y: ", y)
+                        # print("leftSide_poly: ", leftSide_poly)
+                        # print("rightSide_poly: ", rightSide_poly)
                         if str(leftSide_poly) == str(rightSide_poly):
                             graph_points.append((x, y))
         return graph_points
