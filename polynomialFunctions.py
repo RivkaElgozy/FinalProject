@@ -5,7 +5,6 @@ import multiprocessing
 from polyClassTest import *
 
 
-
 def get_prime_number():
     while True:
         p = int(input("Enter a prime number: "))
@@ -14,6 +13,7 @@ def get_prime_number():
         else:
             print("The number is not prime. Please enter a prime number.")
     return p
+
 
 def get_linear_line_between_2_points(first_point, second_point, field_p):
     linear_line_points = []
@@ -27,6 +27,7 @@ def get_linear_line_between_2_points(first_point, second_point, field_p):
             linear_line_points.append((coordinate_a, coordinate_b))
     return linear_line_points
 
+
 def calculate_coordinate_of_linear_line(field_p, z, coordinate_first_point,coordinate_second_point):
     # Gets 2 coordinates respectively and returns the corresponding coordinate in the linear line
     difference = coordinate_first_point.subtract(coordinate_second_point)
@@ -34,7 +35,6 @@ def calculate_coordinate_of_linear_line(field_p, z, coordinate_first_point,coord
     remainder = poly_mul.divide(Poly(field_p.irreduciblePolynomial, field_p))[1]
     coordinate = remainder.add(coordinate_second_point)
     return coordinate
-
 
 
 def process_combination_wrapper(args):
@@ -46,7 +46,7 @@ def get_intersections_parallel(a, b, field_p, hash_table):
     return matches_counter(linear_line_points, hash_table)
 
 
-def get_number_of_intersections_list_Parallel(graph_points, field_p):
+def get_number_of_intersections_list_parallel(graph_points, field_p):
     counter_values = []
     hash_table = create_hash_table(graph_points)
     selected_indexes = set()
@@ -70,7 +70,8 @@ def get_number_of_intersections_list_Parallel(graph_points, field_p):
 
     return counter_values
 
-def create_histogram(values, p):
+
+def create_histogram(values, p, graph):
     # Create a histogram of integer counter values
     unique_counters = list(set(values))  # Get unique counter values
     unique_counters.append(min(unique_counters) - 1)
@@ -83,7 +84,7 @@ def create_histogram(values, p):
     plt.ylabel('Linear Lines')
     plt.xticks(unique_counters)  # Set x-axis ticks to unique counters
     plt.title(f'Histogram for p = {p}')
-    explanation_text = f'This graph has {pow(p, 3)} points. The histogram shows the results for {len(values)} lines'
+    explanation_text = f'This graph has {len(graph.graph_points)} points. The histogram shows the results for {len(values)} lines'
     plt.text(0.5, 0.95, explanation_text, transform=plt.gca().transAxes, ha='center', va='center',
              bbox=dict(facecolor='white', alpha=0.5))
 

@@ -13,7 +13,7 @@ def main():
     # graphPolynomial = Graph(field_p, "x^p + x = y^(p)/(y^(p-1)+1)")- new akuma
     if graphPolynomial.graph_points:
         graphPolynomial.print_graph_points()
-        create_histogram(get_number_of_intersections_list_Parallel(graphPolynomial.graph_points, field_p), field_p.p)
+        create_histogram(get_number_of_intersections_list_parallel(graphPolynomial.graph_points, field_p), field_p.p, graphPolynomial)
 
 if __name__ == "__main__":
     main()
