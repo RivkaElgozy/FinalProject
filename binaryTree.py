@@ -4,8 +4,10 @@ class Node:
         self.left = None
         self.right = None
 
+
 def is_operator(token):
     return token in ['+', '-', '*', '/', '^']
+
 
 def precedence(operator):
     if operator == '+' or operator == '-':
@@ -15,6 +17,7 @@ def precedence(operator):
     elif operator == '^':
         return 3
     return 0
+
 
 def infix_to_postfix(infix):
     postfix = []
@@ -39,6 +42,7 @@ def infix_to_postfix(infix):
 
     return postfix
 
+
 def construct_binary_tree(postfix):
     stack = []
 
@@ -54,6 +58,7 @@ def construct_binary_tree(postfix):
             stack.append(operator_node)
 
     return stack[0]  # The root of the binary tree
+
 
 def equation_to_binary_tree(equation):
     infix_tokens = equation.replace(" ", "")

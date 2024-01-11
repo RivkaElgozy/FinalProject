@@ -1,5 +1,6 @@
 import sympy
 
+
 class field:
     def __init__(self, p):
         self.p = p

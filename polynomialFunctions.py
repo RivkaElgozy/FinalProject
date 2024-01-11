@@ -3,6 +3,30 @@ import random
 import keyboard
 import multiprocessing
 from polyClassTest import *
+import math
+
+# Function to find modulo inverse of b. It returns
+# -1 when inverse doesn't
+# modInverse works for prime m
+def modInverse(b,m):
+    g = math.gcd(b, m)
+    if (g != 1):
+        # print("Inverse doesn't exist")
+        return -1
+    else:
+        # If b and m are relatively prime,
+        # then modulo inverse is b^(m-2) mode m
+        return pow(b, m - 2, m)
+
+
+# Function to compute a/b under modulo m
+def modDivide(a, b, m):
+    a = a % m
+    inv = modInverse(b, m)
+    if inv == -1:
+        print("Division not defined")
+    else:
+        return  (inv*a) % m
 
 
 def get_prime_number():
@@ -111,7 +135,7 @@ def matches_counter(linear_line_points, hash_table):
     return count
 
 
-def evaluate_tree_node(node, x, y, field_p):
+def evaluate_tree_node(node, x, y, field_p, flag):
     if node.value.isnumeric():
         return int(node.value)
     if node.value.lower() == 'x':
@@ -131,17 +155,23 @@ def evaluate_tree_node(node, x, y, field_p):
     elif node.value.lower() == 'p':
         return field_p.p
     elif node.value == '^':
-        left_result = evaluate_tree_node(node.left, x, y, field_p)
-        right_result = int(evaluate_tree_node(node.right, x, y, field_p))
+        left_result = evaluate_tree_node(node.left, x, y, field_p, True)
+        right_result = int(evaluate_tree_node(node.right, x, y, field_p, True))
         if isinstance(left_result, int) and isinstance(right_result, int):
             return pow(left_result, right_result) % field_p.p
         return left_result.pow(right_result)
     elif node.value in ['+', '-', '*', '/']:
-        left_result = evaluate_tree_node(node.left, x, y, field_p)
-        right_result = evaluate_tree_node(node.right, x, y, field_p)
+        left_result = evaluate_tree_node(node.left, x, y, field_p, False)
+        right_result = evaluate_tree_node(node.right, x, y, field_p, False)
+        # if not isinstance(left_result, int):
+        #     left_result = remove_leading_zeros(left_result.coefficients, left_result.field)
+        # if not isinstance(right_result, int):
+        #     right_result = remove_leading_zeros(right_result.coefficients, right_result.field)
         if node.value == '+':
             if isinstance(left_result, int) and isinstance(right_result, int):
-                return left_result + right_result
+                if flag:
+                    return left_result + right_result
+                return (left_result + right_result) % field_p.p
             if isinstance(left_result, int):
                 return Poly([left_result], field_p).add(right_result)
             if isinstance(right_result, int):
@@ -151,7 +181,7 @@ def evaluate_tree_node(node, x, y, field_p):
             if isinstance(left_result, int) and isinstance(right_result, int):
                 return left_result - right_result
             if isinstance(left_result, int):
-                return Poly([left_result], field_p).subtract(right_result)
+                return Poly([0, left_result], field_p).subtract(right_result)
             if isinstance(right_result, int):
                 return left_result.subtract(Poly([0, right_result], field_p))
             return left_result.subtract(right_result)
@@ -159,16 +189,38 @@ def evaluate_tree_node(node, x, y, field_p):
             if isinstance(left_result, int) and isinstance(right_result, int):
                 return left_result * right_result
             if isinstance(left_result, int):
-                return Poly([left_result], field_p).multiply(right_result)
+                return Poly([0, left_result], field_p).multiply(right_result)
             if isinstance(right_result, int):
                 return left_result.multiply(Poly([0, right_result], field_p))
             return left_result.multiply(right_result)
         elif node.value == '/':
             if isinstance(left_result, int) and isinstance(right_result, int):
-                return left_result / right_result
+                return modDivide(left_result, right_result, field_p.p)
+                #return left_result / right_result
             if isinstance(left_result, int):
-                return Poly([left_result], field_p).divide(right_result)[0]
+                if right_result == 0:
+                    return
+                return Poly([0, left_result], field_p).divide(right_result)[0]
             if isinstance(right_result, int):
+                if left_result == 0:
+                    return
                 return left_result.divide(Poly([0, right_result], field_p))[0]
+            if right_result.coefficients == [0] or right_result.coefficients == [0, 0]:
+                return
             return left_result.divide(right_result)[0]
 
+def remove_leading_zeros(arr, field):
+    if isinstance(arr, Poly):
+        arr = arr.coefficients
+    # Find the index of the first non-zero element
+    non_zero_index = next((i for i, x in enumerate(arr) if x != 0), None)
+
+    if non_zero_index is not None:
+        # Slice the array from the first non-zero element onward
+        result = arr[non_zero_index:]
+        if len(result) == 1:
+            return result[0]
+        return Poly(result, field)
+    else:
+        # If the array is all zeros, return a single-element array with 0
+        return 0
