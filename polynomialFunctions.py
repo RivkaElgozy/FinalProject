@@ -8,11 +8,15 @@ from polyClassTest import *
 
 def get_prime_number():
     while True:
-        p = int(input("Enter a prime number: "))
-        if sympy.isprime(p):
-            break
+        p = input("Enter a prime number: ")
+        if p.isdigit():
+            p = int(p)
+            if sympy.isprime(p):
+                break
+            else:
+                print("The number is not prime. Please enter a prime number.")
         else:
-            print("The number is not prime. Please enter a prime number.")
+            print("Please enter a prime number.")
     return p
 
 

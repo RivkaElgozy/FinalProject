@@ -1,9 +1,7 @@
 import cProfile
-
 from polynomialFunctions import *
 from GraphPolynomialClass import Graph
 from FieldClass import field
-from binaryTree import *
 
 
 def main():
