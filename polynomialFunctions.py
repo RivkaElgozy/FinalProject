@@ -2,31 +2,8 @@ import matplotlib.pyplot as plt
 import random
 import keyboard
 import multiprocessing
+import sympy
 from polyClassTest import *
-import math
-
-# Function to find modulo inverse of b. It returns
-# -1 when inverse doesn't
-# modInverse works for prime m
-def modInverse(b,m):
-    g = math.gcd(b, m)
-    if (g != 1):
-        # print("Inverse doesn't exist")
-        return -1
-    else:
-        # If b and m are relatively prime,
-        # then modulo inverse is b^(m-2) mode m
-        return pow(b, m - 2, m)
-
-
-# Function to compute a/b under modulo m
-def modDivide(a, b, m):
-    a = a % m
-    inv = modInverse(b, m)
-    if inv == -1:
-        print("Division not defined")
-    else:
-        return  (inv*a) % m
 
 
 def get_prime_number():
@@ -54,10 +31,10 @@ def get_linear_line_between_2_points(first_point, second_point, field_p):
 
 def calculate_coordinate_of_linear_line(field_p, z, coordinate_first_point,coordinate_second_point):
     # Gets 2 coordinates respectively and returns the corresponding coordinate in the linear line
-    difference = coordinate_first_point.subtract(coordinate_second_point)
+    difference = coordinate_first_point.subtract(coordinate_second_point, False)
     poly_mul = z.multiply(difference)
     remainder = poly_mul.divide(Poly(field_p.irreduciblePolynomial, field_p))[1]
-    coordinate = remainder.add(coordinate_second_point)
+    coordinate = remainder.add(coordinate_second_point, False)
     return coordinate
 
 
@@ -137,90 +114,28 @@ def matches_counter(linear_line_points, hash_table):
 
 def evaluate_tree_node(node, x, y, field_p, flag):
     if node.value.isnumeric():
-        return int(node.value)
+        return Poly([0, int(node.value)], field_p)
     if node.value.lower() == 'x':
-        if x.coefficients[0] == 0:
-            try:
-                return Poly([0]+[x.coefficients[1]], field_p)
-            except:
-                return Poly([0], field_p)
         return x
     elif node.value.lower() == 'y':
-        if y.coefficients[0] == 0:
-            try:
-                return y.coefficients[1]
-            except:
-                return Poly([0], field_p)
         return y
     elif node.value.lower() == 'p':
-        return field_p.p
+        return Poly([0, field_p.p], field_p)
     elif node.value == '^':
         left_result = evaluate_tree_node(node.left, x, y, field_p, True)
-        right_result = int(evaluate_tree_node(node.right, x, y, field_p, True))
-        if isinstance(left_result, int) and isinstance(right_result, int):
-            return pow(left_result, right_result) % field_p.p
-        return left_result.pow(right_result)
+        right_result = evaluate_tree_node(node.right, x, y, field_p, True)
+        return left_result.pow(right_result.coefficients[1])
     elif node.value in ['+', '-', '*', '/']:
         left_result = evaluate_tree_node(node.left, x, y, field_p, False)
         right_result = evaluate_tree_node(node.right, x, y, field_p, False)
-        # if not isinstance(left_result, int):
-        #     left_result = remove_leading_zeros(left_result.coefficients, left_result.field)
-        # if not isinstance(right_result, int):
-        #     right_result = remove_leading_zeros(right_result.coefficients, right_result.field)
         if node.value == '+':
-            if isinstance(left_result, int) and isinstance(right_result, int):
-                if flag:
-                    return left_result + right_result
-                return (left_result + right_result) % field_p.p
-            if isinstance(left_result, int):
-                return Poly([left_result], field_p).add(right_result)
-            if isinstance(right_result, int):
-                return left_result.add(Poly([0, right_result], field_p))
-            return left_result.add(right_result)
+            return left_result.add(right_result, flag)
         elif node.value == '-':
-            if isinstance(left_result, int) and isinstance(right_result, int):
-                return left_result - right_result
-            if isinstance(left_result, int):
-                return Poly([0, left_result], field_p).subtract(right_result)
-            if isinstance(right_result, int):
-                return left_result.subtract(Poly([0, right_result], field_p))
-            return left_result.subtract(right_result)
+            return left_result.subtract(right_result, flag)
         elif node.value == '*':
-            if isinstance(left_result, int) and isinstance(right_result, int):
-                return left_result * right_result
-            if isinstance(left_result, int):
-                return Poly([0, left_result], field_p).multiply(right_result)
-            if isinstance(right_result, int):
-                return left_result.multiply(Poly([0, right_result], field_p))
             return left_result.multiply(right_result)
         elif node.value == '/':
-            if isinstance(left_result, int) and isinstance(right_result, int):
-                return modDivide(left_result, right_result, field_p.p)
-                #return left_result / right_result
-            if isinstance(left_result, int):
-                if right_result == 0:
-                    return
-                return Poly([0, left_result], field_p).divide(right_result)[0]
-            if isinstance(right_result, int):
-                if left_result == 0:
-                    return
-                return left_result.divide(Poly([0, right_result], field_p))[0]
             if right_result.coefficients == [0] or right_result.coefficients == [0, 0]:
                 return
             return left_result.divide(right_result)[0]
 
-def remove_leading_zeros(arr, field):
-    if isinstance(arr, Poly):
-        arr = arr.coefficients
-    # Find the index of the first non-zero element
-    non_zero_index = next((i for i, x in enumerate(arr) if x != 0), None)
-
-    if non_zero_index is not None:
-        # Slice the array from the first non-zero element onward
-        result = arr[non_zero_index:]
-        if len(result) == 1:
-            return result[0]
-        return Poly(result, field)
-    else:
-        # If the array is all zeros, return a single-element array with 0
-        return 0

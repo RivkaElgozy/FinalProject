@@ -2,9 +2,12 @@ import sympy
 
 
 class field:
-    def __init__(self, p):
+    def __init__(self, p, irreducible_polynomial):
         self.p = p
-        self.irreduciblePolynomial = self.get_irreducible_polynomial()
+        if irreducible_polynomial is None:
+            self.irreduciblePolynomial = self.get_irreducible_polynomial()
+        else:
+            self.irreduciblePolynomial = irreducible_polynomial
 
     def get_irreducible_polynomial(self):
         x = sympy.Symbol('x')

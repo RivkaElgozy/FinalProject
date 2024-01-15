@@ -1,6 +1,8 @@
 from binaryTree import equation_to_binary_tree
 from polynomialFunctions import *
 from polyClassTest import *
+import time
+
 
 
 class Graph:
@@ -43,19 +45,17 @@ class Graph:
         rightTree = equation_to_binary_tree(rightSide)
         for a in range(primeNumber):
             for b in range(primeNumber):
-                x = Poly([a, b], field(primeNumber))
+                # x = Poly([a, b], field(primeNumber))
+                x = Poly([a, b], self.field_p)
                 for c in range(primeNumber):
                     for d in range(primeNumber):
-                        y = Poly([c, d], field(primeNumber))
+                        # y = Poly([c, d], field(primeNumber))
+                        y = Poly([c, d], self.field_p)
                         # print("x: ", x)
                         # print("y: ", y)
                         # Parse and evaluate the expressions
                         leftSide_poly = evaluate_tree_node(leftTree, x, y, self.field_p, False)
                         rightSide_poly = evaluate_tree_node(rightTree, x, y, self.field_p, False)
-                        if isinstance(leftSide_poly, int):
-                            leftSide_poly = Poly([0] + [leftSide_poly], field(primeNumber))
-                        if isinstance(rightSide_poly, int):
-                            rightSide_poly = Poly([0] + [rightSide_poly], field(primeNumber))
                         # print("leftSide_poly: ", leftSide_poly)
                         # print("rightSide_poly: ", rightSide_poly)
                         # Check if the pair satisfies the equation

@@ -1,5 +1,4 @@
-import sympy
-from FieldClass import field
+import math
 
 
 def add_poly(p1, p2, p):
@@ -14,8 +13,7 @@ def mul_poly(p1, p2, p):
     result = [0] * (len(p1) + len(p2) - 1)
     for i in range(len(p1)):
         for j in range(len(p2)):
-            result[i + j] = (result[i + j] + p1[i] * p2[j])
-    # print("result: ", result)
+            result[i + j] = (result[i + j] + p1[i] * p2[j]) % p
     return result
 
 
@@ -32,8 +30,8 @@ def div_poly(A, B, p):
     while len(R.coefficients) >= len(B.coefficients) and any(c != 0 for c in R.coefficients):
         a_i, b_j = R.coefficients[0], B.coefficients[0]
         term = [a_i * inv_mod_p(b_j, p) % p] + [0] * (len(R.coefficients) - len(B.coefficients))
-        Q = Q.add(Poly(term, A.field))
-        R = R.subtract(Poly(mul_poly(term, B.coefficients, p), A.field))
+        Q = Q.add(Poly(term, A.field), False)
+        R = R.subtract(Poly(mul_poly(term, B.coefficients, p), A.field), False)
     return Q, R
 
 
@@ -54,35 +52,77 @@ def array_of_2(arr):
         return [0, 0]
 
 
+# Function to find modulo inverse of b. It returns
+# -1 when inverse doesn't
+# modInverse works for prime m
+def mod_inverse(b, m):
+    g = math.gcd(b, m)
+    if g != 1:
+        # print("Inverse doesn't exist")
+        return -1
+    else:
+        # If b and m are relatively prime,
+        # then modulo inverse is b^(m-2) mode m
+        return pow(b, m - 2, m)
+
+
+# Function to compute a/b under modulo m
+def mod_divide(a, b, m):
+    a = a % m
+    inv = mod_inverse(b, m)
+    if inv == -1:
+        print("Division not defined")
+    else:
+        return (inv*a) % m
+
+
+def is_int(a):
+    # Find the index of the first non-zero element
+    non_zero_index = next((i for i, x in enumerate(a.coefficients) if x != 0), None)
+
+    if non_zero_index is not None:
+        # Slice the array from the first non-zero element onward
+        result = a.coefficients[non_zero_index:]
+        if len(result) == 1:
+            return True
+        return False
+    else:
+        # If the array is all zeros
+        return True
+
 class Poly:
     def __init__(self, coefficients, field):
         self.coefficients = array_of_2(coefficients)
         self.field = field
 
-    def add(self, other):
+    def add(self, other, flag):
         len_self, len_other = len(self.coefficients), len(other.coefficients)
         if len_self < len_other:
             self.coefficients = [0] * (len_other - len_self) + self.coefficients
         elif len_other < len_self:
             other.coefficients = [0] * (len_self - len_other) + other.coefficients
-
-        result = [sum(pair) % self.field.p for pair in zip(self.coefficients, other.coefficients)]
+        if flag:
+            result = [sum(pair) for pair in zip(self.coefficients, other.coefficients)]
+        else:
+            result = [sum(pair) % self.field.p for pair in zip(self.coefficients, other.coefficients)]
         return Poly(result, self.field)
 
-    def subtract(self, other):
+    def subtract(self, other, flag):
         len_self, len_other = len(self.coefficients), len(other.coefficients)
-
         if len_self < len_other:
-            self.coefficients += [0] * (len_other - len_self)
+            self.coefficients = [0] * (len_other - len_self) + self.coefficients
         elif len_other < len_self:
             other.coefficients = [0] * (len_self - len_other) + other.coefficients
-
-        result = [diff % self.field.p for diff in (a - b for a, b in zip(self.coefficients, other.coefficients))]
+        if flag:
+            result = [diff for diff in (a - b for a, b in zip(self.coefficients, other.coefficients))]
+        else:
+            result = [diff % self.field.p for diff in (a - b for a, b in zip(self.coefficients, other.coefficients))]
         return Poly(result, self.field)
 
     def multiply(self, other):
         result = mul_poly(self.coefficients, other.coefficients, self.field.p)
-        return (Poly(result, self.field)).divide(Poly(self.field.irreduciblePolynomial, self.field))[1]
+        res = Poly(result, self.field)
+        return res.divide(Poly(self.field.irreduciblePolynomial, self.field))[1]
 
     def divide(self, other):
         q, r = div_poly(self, other, self.field.p)
@@ -93,6 +133,7 @@ class Poly:
     def pow(self, number):
         # print("pow: ", self)
         # print("number: ", number)
+        # print("field: ", self.field.p)
         if number < self.field.p:  # x^(EFq)
             res_mul = Poly(self.coefficients.copy(), self.field)
             for i in range(number-1):
