@@ -64,11 +64,19 @@ def get_intersections_parallel(a, b, field_p, hash_table):
     return matches_counter(linear_line_points, hash_table)
 
 
-def get_number_of_intersections_list_parallel(graph_points, field_p):
+def stop_computation():
+    global stop_flag
+    stop_flag = True
+
+
+def get_number_of_intersections_list_parallel(graph_points, field_p, window):
     counter_values = []
     hash_table = create_hash_table(graph_points)
     selected_indexes = set()
     combinations = []
+
+    button_stop = tk.Button(window, text="Stop", command=stop_computation)
+    button_stop.pack(pady=10)
 
     for i in range(len(graph_points)):
         for j in range(len(graph_points)):
@@ -77,36 +85,39 @@ def get_number_of_intersections_list_parallel(graph_points, field_p):
                 selected_indexes.add((i, j))
 
     random.shuffle(combinations)
+    global stop_flag
+    stop_flag = False
     with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
         for result in pool.imap_unordered(process_combination_wrapper, combinations):
             counter_values.append(result)
 
             # Check for the space key to stop the loop
-            if keyboard.is_pressed('#'):
+            # if keyboard.is_pressed('#'):
+            if stop_flag:
                 pool.terminate()
                 break
 
     return counter_values
 
 
-def create_histogram(values, p, graph):
-    # Create a histogram of integer counter values
-    unique_counters = list(set(values))  # Get unique counter values
-    unique_counters.append(min(unique_counters) - 1)
-    unique_counters.append(max(unique_counters) + 1)
-    unique_counters.sort()  # Sort the unique counter values
-
-    # Create a histogram with integer counter values
-    plt.hist(values, bins=unique_counters, align='left', rwidth=0.8)
-    plt.xlabel('Intersections')
-    plt.ylabel('Linear Lines')
-    plt.xticks(unique_counters)  # Set x-axis ticks to unique counters
-    plt.title(f'Histogram for p = {p}')
-    explanation_text = f'This graph has {len(graph.graph_points)} points. The histogram shows the results for {len(values)} lines'
-    plt.text(0.5, 0.95, explanation_text, transform=plt.gca().transAxes, ha='center', va='center',
-             bbox=dict(facecolor='white', alpha=0.5))
-
-    plt.show()
+# def create_histogram(values, p, graph):
+#     # Create a histogram of integer counter values
+#     unique_counters = list(set(values))  # Get unique counter values
+#     unique_counters.append(min(unique_counters) - 1)
+#     unique_counters.append(max(unique_counters) + 1)
+#     unique_counters.sort()  # Sort the unique counter values
+#
+#     # Create a histogram with integer counter values
+#     plt.hist(values, bins=unique_counters, align='left', rwidth=0.8)
+#     plt.xlabel('Intersections')
+#     plt.ylabel('Linear Lines')
+#     plt.xticks(unique_counters)  # Set x-axis ticks to unique counters
+#     plt.title(f'Histogram for p = {p}')
+#     explanation_text = f'This graph has {len(graph.graph_points)} points. The histogram shows the results for {len(values)} lines'
+#     plt.text(0.5, 0.95, explanation_text, transform=plt.gca().transAxes, ha='center', va='center',
+#              bbox=dict(facecolor='white', alpha=0.5))
+#
+#     plt.show()
 
 
 def create_hash_table(graph_points):
@@ -156,3 +167,35 @@ def evaluate_tree_node(node, x, y, field_p, flag):
                 return
             return left_result.divide(right_result)[0]
 
+
+import tkinter as tk
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
+from tkinter import ttk
+
+
+def create_histogram(values, p, graph, window):
+    # Create a histogram of integer counter values
+    unique_counters = list(set(values))
+    unique_counters.append(min(unique_counters) - 1)
+    unique_counters.append(max(unique_counters) + 1)
+    unique_counters.sort()
+
+    # Create a Matplotlib figure and histogram
+    fig = Figure(figsize=(6, 4), tight_layout=True)
+    ax = fig.add_subplot(111)
+    ax.hist(values, bins=unique_counters, align='left', rwidth=0.8)
+    ax.set_xlabel('Intersections')
+    ax.set_ylabel('Linear Lines')
+    ax.set_xticks(unique_counters)
+    ax.set_title(f'Histogram for p = {p}')
+    explanation_text = f'This graph has {len(graph.graph_points)} points. The histogram shows the results for {len(values)} lines'
+    ax.text(0.5, 0.95, explanation_text, transform=ax.transAxes, ha='center', va='center', bbox=dict(facecolor='white', alpha=0.5))
+
+    # Embed the Matplotlib figure in the Tkinter window
+    canvas = FigureCanvasTkAgg(fig, master=window)
+    canvas_widget = canvas.get_tk_widget()
+    canvas_widget.pack()
+
+    # Show the Matplotlib figure
+    canvas.draw()
