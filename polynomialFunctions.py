@@ -174,6 +174,9 @@ from matplotlib.figure import Figure
 from tkinter import ttk
 
 
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
 def create_histogram(values, p, graph, window):
     # Create a histogram of integer counter values
     unique_counters = list(set(values))
@@ -181,13 +184,19 @@ def create_histogram(values, p, graph, window):
     unique_counters.append(max(unique_counters) + 1)
     unique_counters.sort()
 
+    # Calculate the difference between ticks
+    tick_difference = unique_counters[1] - unique_counters[0]
+
+    # Calculate the new ticks with the same difference
+    new_ticks = [tick for tick in range(min(unique_counters), max(unique_counters) + 1, tick_difference)]
+
     # Create a Matplotlib figure and histogram
     fig = Figure(figsize=(6, 4), tight_layout=True)
     ax = fig.add_subplot(111)
     ax.hist(values, bins=unique_counters, align='left', rwidth=0.8)
     ax.set_xlabel('Intersections')
     ax.set_ylabel('Linear Lines')
-    ax.set_xticks(unique_counters)
+    ax.set_xticks(new_ticks)
     ax.set_title(f'Histogram for p = {p}')
     explanation_text = f'This graph has {len(graph.graph_points)} points. The histogram shows the results for {len(values)} lines'
     ax.text(0.5, 0.95, explanation_text, transform=ax.transAxes, ha='center', va='center', bbox=dict(facecolor='white', alpha=0.5))

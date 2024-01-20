@@ -17,6 +17,7 @@ def submit_action():
     for widget in window.winfo_children():
         if isinstance(widget, tk.Canvas):
             widget.destroy()
+    #cProfile.run('main()', sort='cumulative')
 
     # Start a thread for the heavy computations
     computation_thread = threading.Thread(target=main, args=(prime_number,))
