@@ -1,5 +1,4 @@
 import cProfile
-
 from binaryTree import equation_to_binary_tree
 from polynomialFunctions import *
 from polyClassTest import *

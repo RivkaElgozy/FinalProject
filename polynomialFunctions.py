@@ -4,20 +4,12 @@ import keyboard
 import multiprocessing
 import sympy
 from polyClassTest import *
-
-
-# def get_prime_number():
-#     while True:
-#         p = input("Enter a prime number: ")
-#         if p.isdigit():
-#             p = int(p)
-#             if sympy.isprime(p):
-#                 break
-#             else:
-#                 print("The number is not prime. Please enter a prime number.")
-#         else:
-#             print("Invalid input, Please enter a prime number.")
-#     return p
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import tkinter as tk
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
+from tkinter import ttk
 
 
 def get_prime_number(entry, result_label):
@@ -25,11 +17,11 @@ def get_prime_number(entry, result_label):
     if p.isdigit():
         p = int(p)
         if sympy.isprime(p):
-            result_label.config(text="The number is prime.")
+            result_label.config(text="The number is prime", fg="green")
         else:
-            result_label.config(text="The number is not prime. Please enter a prime number.")
+            result_label.config(text="The number is not prime. Please enter a prime number", fg="red")
     else:
-        result_label.config(text="Invalid input. Please enter a prime number.")
+        result_label.config(text="Invalid input. Please enter a prime number", fg="red")
     return p
 
 
@@ -100,26 +92,6 @@ def get_number_of_intersections_list_parallel(graph_points, field_p, window):
     return counter_values
 
 
-# def create_histogram(values, p, graph):
-#     # Create a histogram of integer counter values
-#     unique_counters = list(set(values))  # Get unique counter values
-#     unique_counters.append(min(unique_counters) - 1)
-#     unique_counters.append(max(unique_counters) + 1)
-#     unique_counters.sort()  # Sort the unique counter values
-#
-#     # Create a histogram with integer counter values
-#     plt.hist(values, bins=unique_counters, align='left', rwidth=0.8)
-#     plt.xlabel('Intersections')
-#     plt.ylabel('Linear Lines')
-#     plt.xticks(unique_counters)  # Set x-axis ticks to unique counters
-#     plt.title(f'Histogram for p = {p}')
-#     explanation_text = f'This graph has {len(graph.graph_points)} points. The histogram shows the results for {len(values)} lines'
-#     plt.text(0.5, 0.95, explanation_text, transform=plt.gca().transAxes, ha='center', va='center',
-#              bbox=dict(facecolor='white', alpha=0.5))
-#
-#     plt.show()
-
-
 def create_hash_table(graph_points):
     hash_table = {}
     for point_a, point_b in graph_points:
@@ -168,16 +140,8 @@ def evaluate_tree_node(node, x, y, field_p, flag):
             return left_result.divide(right_result)[0]
 
 
-import tkinter as tk
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
-from tkinter import ttk
-
-
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
-def create_histogram(values, p, graph, window):
+def create_histogram(values, p, graph, window, button_submit):
+    button_submit.pack(pady=10)
     # Create a histogram of integer counter values
     unique_counters = list(set(values))
     unique_counters.append(min(unique_counters) - 1)
