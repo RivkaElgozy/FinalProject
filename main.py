@@ -8,7 +8,6 @@ import sympy
 
 def submit_action():
     # Disable the Submit button
-    # button_submit.config(state=tk.DISABLED)
     button_submit.pack_forget()
 
     prime_number = get_prime_number(entry_prime, result_label_prime)
@@ -27,7 +26,6 @@ def submit_action():
         # Check the thread status periodically and re-enable the Submit button when it finishes
         window.after(100, lambda: check_thread_status(computation_thread))
     else:
-        # button_submit.config(state=tk.NORMAL)
         button_submit.pack(pady=10)
 
 
@@ -39,18 +37,16 @@ def check_thread_status(thread):
         for widget in window.winfo_children():
             if isinstance(widget, tk.Button) and widget.cget("text") == "Stop":
                 widget.destroy()
-        # If the thread has finished, enable the Submit button
-        # button_submit.config(state=tk.NORMAL)
-        # button_submit.pack()
 
 
 def main(p, graph_expression):
     # The heavy computations inside your main function
     field_p = field(p, None)
-    graph_polynomial = Graph(field_p, graph_expression)
+    graph_polynomial = Graph(field_p, graph_expression, window, result_label_graph)
     if graph_polynomial.graph_points:
         create_histogram(get_number_of_intersections_list_parallel(graph_polynomial.graph_points, field_p, window), field_p.p, graph_polynomial, window, button_submit)
-
+    else:
+        button_submit.pack(pady=10)
 
 if __name__ == "__main__":
     # Create the main window
@@ -74,6 +70,9 @@ if __name__ == "__main__":
     entry_graph = tk.Entry(window, width=30)
     entry_graph.pack(pady=10)
     entry_graph.insert(0, "x^p + x = y^(p+1)")  # Set default value , (x^p + x)*(y^(p-1)+1) = y^(p) - GS Graph
+
+    result_label_graph = tk.Label(window, text="")
+    result_label_graph.pack(pady=10)
 
     button_submit = tk.Button(window, text="Submit", command=submit_action)
     button_submit.pack(pady=10)

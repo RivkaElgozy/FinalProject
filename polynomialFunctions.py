@@ -1,11 +1,6 @@
-import matplotlib.pyplot as plt
 import random
-import keyboard
 import multiprocessing
-import sympy
 from polyClassTest import *
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
@@ -70,9 +65,6 @@ def get_number_of_intersections_list_parallel(graph_points, field_p, window):
     # Calculate the total number of valid combinations
     total_combinations = 0
 
-    button_stop = tk.Button(window, text="Stop", command=stop_computation)
-    button_stop.pack(pady=10)
-
     for i in range(len(graph_points)):
         for j in range(len(graph_points)):
             if i != j and (i, j) not in selected_indexes and (j, i) not in selected_indexes:
@@ -81,17 +73,19 @@ def get_number_of_intersections_list_parallel(graph_points, field_p, window):
                 total_combinations += 1
 
     # Create a determinate progress bar
-    progress_bar = ttk.Progressbar(window, mode="determinate", maximum=total_combinations)
-    progress_bar.pack(pady=10)
+    if field_p.p > 3:
+        progress_bar = ttk.Progressbar(window, mode="determinate", maximum=total_combinations, length=250)
+        progress_label = tk.Label(window, text="Calculating Graph's linear lines", padx=10)
+        progress_label.pack(pady=10)
+        progress_bar.pack(pady=10)
+        button_stop = tk.Button(window, text="Stop", command=stop_computation)
+        button_stop.pack(pady=10)
 
     random.shuffle(combinations)
     global stop_flag
     stop_flag = False
 
     index = 0
-
-    # Start the progress bar
-    # progress_bar.start()
 
     with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
         for result in pool.imap_unordered(process_combination_wrapper, combinations):
@@ -104,12 +98,15 @@ def get_number_of_intersections_list_parallel(graph_points, field_p, window):
                 break
 
             # Update the determinate progress bar
-            index += 1
-            progress_bar["value"] = index
-            window.update_idletasks()
+            if field_p.p > 3:
+                index += 1
+                progress_bar["value"] = index
+                window.update_idletasks()
 
     # Hide the progress bar
-    progress_bar.pack_forget()
+    if field_p.p > 3:
+        progress_label.pack_forget()
+        progress_bar.pack_forget()
 
     return counter_values
 

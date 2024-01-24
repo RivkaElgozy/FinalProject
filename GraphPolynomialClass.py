@@ -2,36 +2,40 @@ import cProfile
 from binaryTree import equation_to_binary_tree
 from polynomialFunctions import *
 from polyClassTest import *
-import time
+
 
 class Graph:
-    def __init__(self, field_p, graph):
+    def __init__(self, field_p, graph, window, result_label_graph):
         self.graph = graph
         self.field_p = field_p
-        self.graph_points = self.calc_graph_points()
+        self.graph_points = self.calc_graph_points(window, result_label_graph)
         # self.graph_points = self.profile_calc_graph_points()
 
-    def validate_parentheses(self):
+    def validate_parentheses(self, result_label_graph):
         stack = []
         for char in self.graph:
             if char == '(':
                 stack.append(char)
             elif char == ')':
                 if not stack:
-                    print("Mismatched parentheses in the graph expression.")
+                    result_label_graph.config(text="Mismatched parentheses in the graph expression", fg="red")
                     return False
                 stack.pop()
 
         if stack:
-            print("Mismatched parentheses in the graph expression.")
+            result_label_graph.config(text="Mismatched parentheses in the graph expression", fg="red")
             return False
+        result_label_graph.config(text="Graph expression is good", fg="green")
         return True
 
-    def calc_graph_points(self):
-        primeNumber = self.field_p.p
+    def calc_graph_points(self, window, result_label_graph):
+        prime_number = self.field_p.p
         # Validate parentheses
-        if not self.validate_parentheses():
+        if not self.validate_parentheses(result_label_graph):
             return False
+
+        if prime_number < 5:
+            window = None
 
         # Split the graph expression into individual components
         components = self.graph.split('=')
@@ -42,16 +46,34 @@ class Graph:
         leftSide, rightSide = components
         leftTree = equation_to_binary_tree(leftSide)
         rightTree = equation_to_binary_tree(rightSide)
-        for a in range(primeNumber):
-            for b in range(primeNumber):
+        if window is not None:
+            max_number = prime_number**4
+            # Create a determinate progress bar
+            progress_bar = ttk.Progressbar(window, mode="determinate", maximum=max_number, length=250)
+            progress_label = tk.Label(window, text="Calculating Graph's points", padx=10)
+            progress_label.pack(pady=10)
+            progress_bar.pack(pady=10)
+        index = 0
+
+        for a in range(prime_number):
+            for b in range(prime_number):
                 x = Poly([a, b], self.field_p)
-                for c in range(primeNumber):
-                    for d in range(primeNumber):
+                for c in range(prime_number):
+                    for d in range(prime_number):
                         y = Poly([c, d], self.field_p)
-                        leftSide_poly = evaluate_tree_node(leftTree, x, y, self.field_p, False)
-                        rightSide_poly = evaluate_tree_node(rightTree, x, y, self.field_p, False)
-                        if str(leftSide_poly) == str(rightSide_poly):
+                        left_side_poly = evaluate_tree_node(leftTree, x, y, self.field_p, False)
+                        right_side_poly = evaluate_tree_node(rightTree, x, y, self.field_p, False)
+                        if str(left_side_poly) == str(right_side_poly):
                             graph_points.append((x, y))
+                        # Update the determinate progress bar
+                        if window is not None:
+                            index += 1
+                            progress_bar["value"] = index
+                            window.update_idletasks()
+        # Hide the progress bar
+        if window is not None:
+            progress_label.pack_forget()
+            progress_bar.pack_forget()
         return graph_points
 
     def profile_calc_graph_points(self):
