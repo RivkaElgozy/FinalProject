@@ -67,6 +67,9 @@ def get_number_of_intersections_list_parallel(graph_points, field_p, window):
     selected_indexes = set()
     combinations = []
 
+    # Calculate the total number of valid combinations
+    total_combinations = 0
+
     button_stop = tk.Button(window, text="Stop", command=stop_computation)
     button_stop.pack(pady=10)
 
@@ -75,19 +78,38 @@ def get_number_of_intersections_list_parallel(graph_points, field_p, window):
             if i != j and (i, j) not in selected_indexes and (j, i) not in selected_indexes:
                 combinations.append((graph_points[i], graph_points[j], field_p, hash_table))
                 selected_indexes.add((i, j))
+                total_combinations += 1
+
+    # Create a determinate progress bar
+    progress_bar = ttk.Progressbar(window, mode="determinate", maximum=total_combinations)
+    progress_bar.pack(pady=10)
 
     random.shuffle(combinations)
     global stop_flag
     stop_flag = False
+
+    index = 0
+
+    # Start the progress bar
+    # progress_bar.start()
+
     with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
         for result in pool.imap_unordered(process_combination_wrapper, combinations):
             counter_values.append(result)
 
             # Check for the space key to stop the loop
-            # if keyboard.is_pressed('#'):
             if stop_flag:
+                # Stop the progress bar
                 pool.terminate()
                 break
+
+            # Update the determinate progress bar
+            index += 1
+            progress_bar["value"] = index
+            window.update_idletasks()
+
+    # Hide the progress bar
+    progress_bar.pack_forget()
 
     return counter_values
 
