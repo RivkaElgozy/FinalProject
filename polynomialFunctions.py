@@ -1,5 +1,8 @@
 import random
 import multiprocessing
+
+import matplotlib.pyplot as plt
+
 from polyClassTest import *
 import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -159,8 +162,11 @@ def evaluate_tree_node(node, x, y, field_p, flag):
             return left_result.divide(right_result)[0]
 
 
+import numpy as np
+
 def create_histogram(values, p, graph, window, button_submit):
     button_submit.pack(pady=10)
+
     # Create a histogram of integer counter values
     unique_counters = list(set(values))
     unique_counters.append(min(unique_counters) - 1)
@@ -168,15 +174,25 @@ def create_histogram(values, p, graph, window, button_submit):
     unique_counters.sort()
 
     # Calculate the difference between ticks
-    tick_difference = unique_counters[1] - unique_counters[0]
+    tick_difference = 1
 
     # Calculate the new ticks with the same difference
     new_ticks = [tick for tick in range(min(unique_counters), max(unique_counters) + 1, tick_difference)]
 
+    # Use numpy.histogram to compute the histogram without plotting
+    counts, bin_edges = np.histogram(values, bins=unique_counters)
+
+    # Print histogram details
+    print("Bin Edges:", bin_edges)
+    print("Counts:", counts)
+
     # Create a Matplotlib figure and histogram
-    fig = Figure(figsize=(6, 4), tight_layout=True)
+    fig = Figure(figsize=(6, 4))
     ax = fig.add_subplot(111)
-    ax.hist(values, bins=unique_counters, align='left', rwidth=0.8)
+
+    # Set rwidth to 0.8 for sufficient space between bars and linewidth to 0 for consistent white edges
+    ax.hist(values, bins=unique_counters, align='left', rwidth=0.8, edgecolor='white', linewidth=0)
+
     ax.set_xlabel('Intersections')
     ax.set_ylabel('Linear Lines')
     ax.set_xticks(new_ticks)
@@ -191,3 +207,10 @@ def create_histogram(values, p, graph, window, button_submit):
 
     # Show the Matplotlib figure
     canvas.draw()
+
+
+
+
+
+
+
