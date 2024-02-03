@@ -9,7 +9,7 @@ class Graph:
         self.graph = graph
         self.field_p = field_p
         self.graph_points = self.calc_graph_points(window, result_label_graph)
-        # self.graph_points = self.profile_calc_graph_points()
+        # self.graph_points = self.profile_calc_graph_points(window, result_label_graph)
 
     def validate_parentheses(self, result_label_graph):
         stack = []
@@ -76,8 +76,8 @@ class Graph:
             progress_bar.pack_forget()
         return graph_points
 
-    def profile_calc_graph_points(self):
-        profile_results = cProfile.runctx('self.calc_graph_points()', globals(), locals(), sort='cumulative')
+    def profile_calc_graph_points(self, window, result_label_graph):
+        profile_results = cProfile.runctx('self.calc_graph_points(None, result_label_graph)', globals(), locals(), sort='cumulative')
         return profile_results
 
     def print_graph_points(self):

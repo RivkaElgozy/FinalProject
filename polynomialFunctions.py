@@ -1,7 +1,13 @@
 import random
 import multiprocessing
+from threading import Thread
+
+import matplotlib
+from matplotlib import pyplot as plt
+
 from polyClassTest import *
 import tkinter as tk
+matplotlib.use('agg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from tkinter import ttk
@@ -163,20 +169,18 @@ def create_histogram(values, p, graph, window, button_submit):
     button_submit.pack(pady=10)
     # Create a histogram of integer counter values
     unique_counters = list(set(values))
-    unique_counters.append(min(unique_counters) - 1)
-    unique_counters.append(max(unique_counters) + 1)
+    unique_counters.extend([min(values) - 1, max(values) + 1])
     unique_counters.sort()
 
     # Calculate the difference between ticks
     tick_difference = unique_counters[1] - unique_counters[0]
 
     # Calculate the new ticks with the same difference
-    new_ticks = [tick for tick in range(min(unique_counters), max(unique_counters) + 1, tick_difference)]
+    new_ticks = list(range(min(unique_counters), max(unique_counters) + 1, tick_difference))
 
     # Create a Matplotlib figure and histogram
-    fig = Figure(figsize=(6, 4), tight_layout=True)
-    ax = fig.add_subplot(111)
-    ax.hist(values, bins=unique_counters, align='left', rwidth=0.8)
+    fig, ax = plt.subplots(figsize=(6, 4), tight_layout=True)
+    ax.hist(values, bins=new_ticks, align='left', edgecolor='black', rwidth=0.9, color='skyblue')
     ax.set_xlabel('Intersections')
     ax.set_ylabel('Linear Lines')
     ax.set_xticks(new_ticks)
@@ -191,3 +195,8 @@ def create_histogram(values, p, graph, window, button_submit):
 
     # Show the Matplotlib figure
     canvas.draw()
+
+
+
+
+
