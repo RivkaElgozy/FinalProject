@@ -195,8 +195,3 @@ def create_histogram(values, p, graph, window, button_submit):
 
     # Show the Matplotlib figure
     canvas.draw()
-
-
-
-
-
