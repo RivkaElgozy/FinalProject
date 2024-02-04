@@ -47,7 +47,7 @@ class Graph:
         leftTree = equation_to_binary_tree(leftSide)
         rightTree = equation_to_binary_tree(rightSide)
         if window is not None:
-            max_number = prime_number**4
+            max_number = prime_number
             # Create a determinate progress bar
             progress_bar = ttk.Progressbar(window, mode="determinate", maximum=max_number, length=250)
             progress_label = tk.Label(window, text="Calculating Graph's points", padx=10)
@@ -65,11 +65,11 @@ class Graph:
                         right_side_poly = evaluate_tree_node(rightTree, x, y, self.field_p, False)
                         if str(left_side_poly) == str(right_side_poly):
                             graph_points.append((x, y))
-                        # Update the determinate progress bar
-                        if window is not None:
-                            index += 1
-                            progress_bar["value"] = index
-                            window.update_idletasks()
+            # Update the determinate progress bar
+            if window is not None:
+                index += 1
+                progress_bar["value"] = index
+                window.update_idletasks()
         # Hide the progress bar
         if window is not None:
             progress_label.pack_forget()

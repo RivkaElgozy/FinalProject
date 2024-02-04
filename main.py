@@ -22,7 +22,6 @@ def submit_action():
         # Start a thread for the heavy computations
         computation_thread = threading.Thread(target=main, args=(prime_number, graph_expression))
         computation_thread.start()
-
         # Check the thread status periodically and re-enable the Submit button when it finishes
         window.after(100, lambda: check_thread_status(computation_thread))
     else:
@@ -47,6 +46,7 @@ def main(p, graph_expression):
         create_histogram(get_number_of_intersections_list_parallel(graph_polynomial.graph_points, field_p, window), field_p.p, graph_polynomial, window, button_submit)
     else:
         button_submit.pack(pady=10)
+
 
 if __name__ == "__main__":
     # Create the main window

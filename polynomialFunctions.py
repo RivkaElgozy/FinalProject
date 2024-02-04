@@ -1,16 +1,14 @@
 import random
 import multiprocessing
-from threading import Thread
+import threading
 
 import matplotlib
 from matplotlib import pyplot as plt
-
 from polyClassTest import *
 import tkinter as tk
-matplotlib.use('agg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
 from tkinter import ttk
+matplotlib.use('agg')
 
 
 def get_prime_number(entry, result_label):
@@ -60,9 +58,24 @@ def get_intersections_parallel(a, b, field_p, hash_table):
 def stop_computation():
     global stop_flag
     stop_flag = True
+    # # Disable the Submit button
+    # for widget in wind.winfo_children():
+    #     if isinstance(widget, tk.Button) and widget.cget("text") == "Stop":
+    #         widget.pack_forget()
+    #
+    # # Start a thread for the heavy computations
+    # computation_thread = threading.Thread(target=set_stop_flag_true)
+    # computation_thread.start()
+
+
+def set_stop_flag_true():
+    global stop_flag
+    stop_flag = True
 
 
 def get_number_of_intersections_list_parallel(graph_points, field_p, window):
+    global wind
+    wind = window
     counter_values = []
     hash_table = create_hash_table(graph_points)
     selected_indexes = set()
@@ -90,9 +103,8 @@ def get_number_of_intersections_list_parallel(graph_points, field_p, window):
     random.shuffle(combinations)
     global stop_flag
     stop_flag = False
-
     index = 0
-
+    progress_bar_flag = 0
     with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
         for result in pool.imap_unordered(process_combination_wrapper, combinations):
             counter_values.append(result)
@@ -104,8 +116,10 @@ def get_number_of_intersections_list_parallel(graph_points, field_p, window):
                 break
 
             # Update the determinate progress bar
-            if field_p.p > 3:
-                index += 1
+            index += 1
+            progress_bar_flag += 1
+            if field_p.p > 3 and field_p.p**4 <= progress_bar_flag:
+                progress_bar_flag = 0
                 progress_bar["value"] = index
                 window.update_idletasks()
 
