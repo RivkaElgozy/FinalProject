@@ -39,12 +39,11 @@ def check_thread_status(thread):
 
 
 def main(p, graph_expression):
-    # The heavy computations inside your main function
     field_p = field(p, None)
     graph_polynomial = Graph(field_p, graph_expression, window, result_label_graph)
     if graph_polynomial.graph_points:
         # create_histogram(get_number_of_intersections_list(graph_polynomial.graph_points, field_p, window), field_p.p, graph_polynomial, window, button_submit)
-        create_histogram(get_number_of_intersections_list_parallel(graph_polynomial.graph_points, field_p, window), field_p.p, graph_polynomial, window, button_submit)
+        create_histogram(get_number_of_intersections_list_parallel(graph_polynomial.graph_points, graph_polynomial.field_p, window), graph_polynomial.field_p.p, graph_polynomial, window, button_submit)
     else:
         button_submit.pack(pady=10)
 

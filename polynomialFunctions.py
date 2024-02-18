@@ -2,10 +2,10 @@ import itertools
 import random
 import multiprocessing
 import threading
-
+import math
 import matplotlib
 from matplotlib import pyplot as plt
-from polyClassTest import *
+from polyClass import *
 import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkinter import ttk
@@ -83,33 +83,31 @@ def get_number_of_intersections_list_parallel(graph_points, field_p, window):
     wind = window
     counter_values = []
     hash_table = create_hash_table(graph_points)
-    selected_indexes = set()
     combinations = []
     val = 0
 
     # Create a determinate progress bar
-    progress_bar = ttk.Progressbar(window, mode="determinate", length=450)
+    n = len(graph_points)
+    k = 2
+    total_combinations = math.factorial(n) // (math.factorial(k) * math.factorial(n - k))
+    print(total_combinations, "total")
+    progress_bar = ttk.Progressbar(window, mode="determinate", length=450, maximum=total_combinations)
     progress_label = tk.Label(window, text="Calculating Graph's linear lines", padx=10)
     progress_label.pack(pady=10)
     progress_bar.pack(pady=10)
     button_stop = tk.Button(window, text="Stop", command=stop_computation)
     button_stop.pack(pady=10)
 
-    total_combinations = 0
-    for i, j in itertools.combinations(range(len(graph_points)), 2):
-        combinations.append((graph_points[i], graph_points[j], field_p, hash_table))
-        selected_indexes.add((i, j))
-        total_combinations += 1
-
-    print(total_combinations, "total")
-    progress_bar['maximum'] = total_combinations
-    random.shuffle(combinations)
+    # for i, j in itertools.combinations(range(len(graph_points)), 2):
+    #     combinations.append((graph_points[i], graph_points[j], field_p, hash_table))
+    # random.shuffle(combinations)
     global stop_flag
     stop_flag = False
     index = 0
     percent_total_combinations = total_combinations / 1000
     with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
-        for result in pool.imap_unordered(process_combination_wrapper, combinations):
+        # for result in pool.imap_unordered(process_combination_wrapper, ((graph_points[a], graph_points[b], field_p, hash_table) for a, b in itertools.combinations(range(len(graph_points)), 2))):
+        for result in pool.imap_unordered(process_combination_wrapper,((graph_points[a], graph_points[b], field_p, hash_table) for a, b in(random.sample(range(len(graph_points)), 2) for _ in range(total_combinations)))):
             counter_values.append(result)
 
             # Check for the space key to stop the loop

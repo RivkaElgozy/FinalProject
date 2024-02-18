@@ -1,7 +1,7 @@
 import cProfile
 from binaryTree import equation_to_binary_tree
 from polynomialFunctions import *
-from polyClassTest import *
+from polyClass import *
 
 
 class Graph:
@@ -46,7 +46,7 @@ class Graph:
                     return False
                 stack.pop()
             elif char in '+-*/^':
-                if not last_char or not last_char.isalnum():
+                if (not last_char or not last_char.isalnum()) and not last_char == ')':
                     result_label_graph.config(text="Invalid expression: Operator cannot come after another operator",
                                               fg="red")
                     return False
