@@ -192,35 +192,4 @@ class Poly:
         else:
             return " + ".join(terms[::-1])
 
-# Example usage:
-# p_value = 7
-# finite_field = field(p_value, None)
-#
-# A_coefficients = [6,3,1,1,0,1]
-# B_coefficients = [3,5,6]
-#
-#
-# A_poly = Poly(A_coefficients, finite_field)
-# B_poly = Poly(B_coefficients, finite_field)
-#
-# # Perform polynomial division
-# Q_poly, R_poly = A_poly.divide(B_poly)
 
-# p_value = 2
-# finite_field = field(p_value, None)
-# C_coefficients = [1, 1]
-# C_poly = Poly(C_coefficients, finite_field)
-#
-# res_poly = C_poly.pow2(3)
-#
-# print(C_poly.field.irreduciblePolynomial)
-# print("res_poly:", res_poly)
-
-# print("A(x):", A_poly)
-# print("B(x):", B_poly)
-# print("Quotient Q(x):", Q_poly)
-# print("Remainder R(x):", R_poly)
-# print("A(x)^p:", A_poly.pow(7))
-# print("A(x)^p:", str(A_poly.pow(7)))
-#
-# print(array_of_2([0,0]))
